@@ -244,10 +244,7 @@ class LoginAndSignTemplate(ABC):
 
         self._account_list = account_list
 
-        self.root_dir = os.path.join(self._set_files_dir(),
-                                     "files") if not config.GlobalConfig.IS_DEBUG else os.path.join(
-            os.path.dirname(os.path.dirname(__file__)), "files")
-
+        self.root_dir = self.__get_root_dir()
 
         for username, password in self._account_list:
             self.local_user_config = {}
@@ -281,6 +278,17 @@ class LoginAndSignTemplate(ABC):
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36 Edg/113.0.1774.35",
             "Accept": "application/json;charset=UTF-8"
         }
+
+    def __get_root_dir(self):
+        root_dir = os.path.join(self._set_files_dir(),
+                                "files") if not config.GlobalConfig.IS_DEBUG else os.path.join(
+            os.path.dirname(os.path.dirname(__file__)), "files")
+
+        # 确保目录存在
+        if not os.path.exists(root_dir):
+            os.makedirs(root_dir)
+
+        return root_dir
 
     def load_local_user_config(self, path: str):
         """
@@ -428,6 +436,7 @@ class LoginAndSignTemplate(ABC):
         return False
 
     def flash_config(self):
+
         with open(self.local_user_config_path, "w") as fp:
             json.dump(self.local_user_config, fp)
 
