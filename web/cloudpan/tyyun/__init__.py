@@ -157,8 +157,12 @@ class TY(LoginAndSignTemplate):
         登录帐号
         :return:
         """
+        try:
+            self.__prepare_for_login()
+        except ImportError as e:
+            self.print(e)
+            return False
         # 登录前期准备工作
-        self.__prepare_for_login()
         # 登录链接
         login_url = "https://open.e.189.cn/api/logbox/oauth2/loginSubmit.do"
         # 构造请求体

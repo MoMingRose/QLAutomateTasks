@@ -20,7 +20,7 @@ def slide_match(target_bytes, background_bytes):
         det = DdddOcr(det=False, ocr=False, show_ad=False)
         return det.slide_match(target_bytes, background_bytes)
     except ImportError:
-        pass
+        raise ImportError("没有安装ddddocr模块，无法使用滑动验证")
 
 class SlideMatch(BaseModel):
     target_bytes: bytes

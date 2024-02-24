@@ -5,6 +5,7 @@
 【创建时间】统一运行签到任务的入口
 【功能描述】
 """
+import os
 
 from utils.base_utils import global_run
 from utils.base_utils import msg_list
@@ -13,7 +14,7 @@ if __name__ == '__main__':
     try:
         from dotenv import load_dotenv
 
-        # load_dotenv()
+        load_dotenv()
     except:
         pass
     from software import *
@@ -22,11 +23,12 @@ if __name__ == '__main__':
     tasks = WEB_TASKS + SOFTWARE_TASKS
 
     for task in tasks:
-        # if task.TAG not in ["天翼云盘"]:
-        #     continue
+        if os.environ.get("IS_DEBUG_TASKS"):
+            if task.TAG not in ["天翼云盘"]:
+                continue
         global_run(task, task.TAG)
 
-    from notify import pushplus_bot
+    from notify import send
 
-    pushplus_bot("自写签到脚本任务", "\n".join(msg_list))
+    send("自写签到脚本任务", "\n".join(msg_list))
     msg_list.clear()

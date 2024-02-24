@@ -248,9 +248,9 @@ class LoginAndSignTemplate(ABC):
                                      "files") if not config.GlobalConfig.IS_DEBUG else os.path.join(
             os.path.dirname(os.path.dirname(__file__)), "files")
 
-        self.local_user_config = {}
 
         for username, password in self._account_list:
+            self.local_user_config = {}
             # 初始化账号密码
             self._username = username
             self._password = password
@@ -264,10 +264,13 @@ class LoginAndSignTemplate(ABC):
             # 加载配置
             self.load_local_user_config(self.local_user_config_path)
 
-            # 执行任务的前期准备
-            self.__prepare()
-            # 调用基础任务运行
-            self._base_task_run()
+            try:
+                # 执行任务的前期准备
+                self.__prepare()
+                # 调用基础任务运行
+                self._base_task_run()
+            except Exception as e:
+                self.print(e)
 
     def _generate_bash_headers(self):
         """
