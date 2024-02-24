@@ -6,14 +6,16 @@
 【功能描述】
 """
 
-from dotenv import load_dotenv
-
 from utils.base_utils import global_run
 from utils.base_utils import msg_list
 
 if __name__ == '__main__':
-    load_dotenv()
+    try:
+        from dotenv import load_dotenv
 
+        # load_dotenv()
+    except:
+        pass
     from software import *
     from web import *
 

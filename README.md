@@ -1,3 +1,10 @@
+
+### 青龙面板拉库命令：
+
+```shell
+ql repo https://github.com/MoMingRose/QLAutomateTasks.git "一键任务执行" "docs|gitignore|README" "common|software|utils|web|config.py|notify.py"
+```
+
 ### 此项目支持的签到任务状态如下
 
 🟢: 正常运行 🔴: 脚本暂不可用 ⚪：脚本未添加 ⭕：脚本已移除

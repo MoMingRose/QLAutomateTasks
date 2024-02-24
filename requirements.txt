@@ -1,0 +1,5 @@
+pydantic~=2.6.1
+requests~=2.31.0
+rsa~=4.9
+ujson~=5.9.0
+python-dotenv~=1.0.1
