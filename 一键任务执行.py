@@ -20,8 +20,8 @@ if __name__ == '__main__':
     tasks = WEB_TASKS + SOFTWARE_TASKS
 
     for task in tasks:
-        if task.TAG not in ["天翼云盘"]:
-            continue
+        # if task.TAG not in ["天翼云盘"]:
+        #     continue
         global_run(task, task.TAG)
 
     from notify import pushplus_bot
