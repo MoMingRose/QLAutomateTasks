@@ -8,7 +8,7 @@ ql repo https://github.com/MoMingRose/QLAutomateTasks.git "一键任务执行" "
 
 > [!TIP]
 > 如果是Docker拉取的青龙容器，建议拉取debian版本的，因为alpine不能安装ddddocr库（亲测）
-> > 1. ddddocr库，我主要用来进行天翼云盘的滑块验证码识别，如果不介意天翼云盘用不了，可以选择不安装ddddocr依赖
+> > 1. [ddddocr库](https://github.com/sml2h3/ddddocr)，我主要用来进行天翼云盘的滑块验证码识别，如果不介意天翼云盘用不了，可以选择不安装ddddocr依赖
 > > 2. 当然，正常情况下是不会跳出来验证码，自然就用不到ddddocr库
 
 ```text
