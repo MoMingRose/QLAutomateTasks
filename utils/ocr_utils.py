@@ -21,9 +21,3 @@ def slide_match(target_bytes, background_bytes):
         return det.slide_match(target_bytes, background_bytes)
     except ImportError:
         raise ImportError("没有安装ddddocr模块，无法使用滑动验证")
-
-class SlideMatch(BaseModel):
-    target_bytes: bytes
-    background_bytes: bytes
-    simple_target: bool = Field(default=False, description="是否使用简单模式")
-    flag: bool = Field(default=False, description="")

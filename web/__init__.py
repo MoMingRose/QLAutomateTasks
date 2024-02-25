@@ -8,5 +8,6 @@
 from .cloudpan import CLOUD_PAN_TASKS
 from .forum import FORUM_TASKS
 from .resource import RESOURCE_TASKS
+from .v import V_TASKS
 
-WEB_TASKS = FORUM_TASKS + CLOUD_PAN_TASKS + RESOURCE_TASKS
+WEB_TASKS = FORUM_TASKS + CLOUD_PAN_TASKS + RESOURCE_TASKS + V_TASKS

@@ -3,27 +3,28 @@
 """
 【作者】MoMingLog
 【创建时间】2023-12-12
-【功能描述】
+【功能描述】 天翼云盘自动任务
 """
 import base64
 import json
 import os
 import re
 import time
+from typing import Tuple
 
 import requests
+import ujson
 
 import config
-from common.base import LoginAndSignTemplate
 from common.base_config import BaseUserConfig
+from common.base import BaseFileStorageTemplateForAccount
 from utils.crypt_utils import rsa_encrypt, aes_encrypt, aes_decrypt
 from utils.generator_utils import uuid_generator, rates_generator
 from utils.ocr_utils import slide_match
 from web.cloudpan.tyyun.scheme import *
 
 
-# 天翼云盘
-class TY(LoginAndSignTemplate):
+class TY(BaseFileStorageTemplateForAccount):
     TY_DEFAULT_USER_CONFIG = config.DefaultUserConfig.TYYPConfig
     TAG = TY_DEFAULT_USER_CONFIG.tag
 
@@ -40,128 +41,14 @@ class TY(LoginAndSignTemplate):
             default_env_key="tyyp_userinfo"
         )
 
-    def other_task_run(self):
-        """
-        其他的任务执行入口，默认执行签到任务（无需再次添加，只需要实现了_sign方法即可）
-        :return:
-        """
-        ret = []
-
-        if self.check_run_task_permission("lucky"):
-            # 抽奖任务
-            if self._lucky():
-                self.lock_task("lucky")
-                ret.append(True)
-        else:
-            self.print("今日抽奖任务已完成!")
-
-        return all(ret)
-
-    def last_task_run(self):
-        # 打印用户信息任务（方便统计）
-        self._print_userinfo()
-
-    def _set_files_dir(self):
-        return os.path.dirname(__file__)
-
-    def _check_expire(self) -> bool:
-        """
-        检查cookie是否过期
-        :return: 过期返回True，否则返回False
-        """
-        userinfo = self._get_userinfo()
-        try:
-            if userinfo is not None and userinfo["res_message"] == "成功":
-                return False
-            return True
-        except Exception as e:
-            self.print("检查cookie是否过期异常，原因：", e)
-            return True
-
-    def _print_userinfo(self):
-        userinfo = self._get_userinfo()
-        if userinfo is not None and userinfo["res_message"] == "成功":
-            userinfo = UserInfoData.model_validate(userinfo)
-            self.print(
-                f"用户空间容量：\n可用{round(userinfo.available / 1073741824, 2)} GB\n总共{round(userinfo.capacity / 1073741824, 2)} GB")
-        else:
-            self.print("获取用户信息失败")
-
-    def _get_userinfo(self):
-        """
-        获取用户信息
-        :return:
-        """
-        url = "https://cloud.189.cn/api/open/user/getUserInfoForPortal.action"
-
-        response = self.session.get(url, headers=self._base_headers)
-
-        try:
-            return response.json()
-        except:
-            self.print(response.text)
-            return None
-
-    def _lucky(self):
-        """
-        抽奖
-        :return:
-        """
-        lucky_urls = [
-            "https://m.cloud.189.cn/v2/drawPrizeMarketDetails.action?taskId=TASK_SIGNIN&activityId=ACT_SIGNIN",
-            "https://m.cloud.189.cn/v2/drawPrizeMarketDetails.action?taskId=TASK_SIGNIN_PHOTOS&activityId=ACT_SIGNIN",
-            "https://m.cloud.189.cn/v2/drawPrizeMarketDetails.action?taskId=TASK_2022_FLDFS_KJ&activityId=ACT_SIGNIN"
-        ]
-
-        lucky_index = 0
-
-        ret = []
-
-        for lucky_url in lucky_urls:
-            lucky_index += 1
-            response = self.session.get(lucky_url)
-            try:
-                res_json = response.json()
-                if res_json.get("errorCode"):
-                    self.print(f"抽奖序号: {lucky_index} 请勿重复抽奖, 今日已经抽奖")
-                else:
-                    self.print(f"抽奖序号: {lucky_index} 抽奖成功, 获得抽奖奖励: {res_json.get('description')}")
-                ret.append(True)
-            except Exception as e:
-                self.print(f"抽奖序号: {lucky_index} 抽奖异常, 原因：{e}")
-                ret.append(False)
-        return all(ret)
-
-    def _sign(self):
-        """
-        签到
-        :return:
-        """
-        sign_url = "https://m.cloud.189.cn/mkt/userSign.action"
-
-        response = self.session.get(sign_url)
-        try:
-            res_json = response.json()
-            bonus = res_json.get('netdiskBonus')
-            if res_json.get("isSign"):
-                self.print(f"请勿重复签到, 今日已经获得签到奖励: {bonus}M空间")
-            else:
-                self.print(f"签到成功, 获得签到奖励: {bonus}")
-            return True
-        except Exception as e:
-            self.print(f"签到异常, 原因：{e}")
-            return False
-
-    def _login(self):
-        """
-        登录帐号
-        :return:
-        """
+    def fetch_primary_data(self, username: str, password: str, *args, **kwargs) -> bool | Tuple[str, any, bool]:
         try:
             self.__prepare_for_login()
         except ImportError as e:
-            self.print(e)
+            self.push_msg(e)
             return False
+
+        self.push_msg("正在准备登录...")
         # 登录前期准备工作
         # 登录链接
         login_url = "https://open.e.189.cn/api/logbox/oauth2/loginSubmit.do"
@@ -188,24 +75,132 @@ class TY(LoginAndSignTemplate):
         }
 
         response = self.session.post(login_url, data=data)
+        res_json = response.json()
+        msg = res_json.get("msg")
+        if msg in ["密码不正确", "账户名或密码错误"]:
+            raise Exception("登录失败! 账户名或密码错误!")
+        elif msg == "登录成功":
+            # 获取重定向链接（主要是为了更新代表用户的cookie）
+            toUrl = res_json.get("toUrl")
+            # 发送重定向请求
+            self.session.get(toUrl)
+            return True
+        else:
+            raise Exception(" 登录失败" + ujson.dumps(res_json))
+
+    def build_base_headers(self) -> dict:
+        return {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36 Edg/113.0.1774.35",
+            "Accept": "application/json;charset=UTF-8"
+        }
+
+    def get_primary_data(self, current_user_config_data: dict) -> bool | Tuple[str, any, bool]:
+        return "cookie", current_user_config_data["cookie"], True
+
+    def check_expire_task_run(self) -> bool:
+        """
+        检查cookie是否过期
+        :return: 过期返回True，否则返回False
+        """
+        userinfo = self._get_userinfo()
+        try:
+            if userinfo is not None and userinfo["res_message"] == "成功":
+                return False
+            return True
+        except Exception as e:
+            self.push_msg("检查cookie是否过期异常，原因：", e)
+            return True
+
+    def sign_task_run(self, *args, **kwargs) -> bool:
+        sign_url = "https://m.cloud.189.cn/mkt/userSign.action"
+
+        response = self.session.get(sign_url)
         try:
             res_json = response.json()
-            msg = res_json.get("msg")
-            if msg == "密码不正确":
-                self.print("密码不正确")
-                return False
-            elif msg == "登录成功":
-                # 获取重定向链接（主要是为了更新代表用户的cookie）
-                toUrl = res_json.get("toUrl")
-                # 发送重定向请求
-                self.session.get(toUrl)
-                return True
+            bonus = res_json.get('netdiskBonus')
+            if res_json.get("isSign"):
+                self.push_msg(f"请勿重复签到, 今日已经获得签到奖励: {bonus}M空间")
             else:
-                self.print(res_json)
-                return False
-        except:
-            self.print(response.text)
+                self.push_msg(f"签到成功, 获得签到奖励: {bonus}")
+            return True
+        except Exception as e:
+            self.push_msg(f"签到异常, 原因：{e}")
             return False
+
+    def other_task_run(self, *args, **kwargs) -> bool:
+        """
+        其他的任务执行入口，默认执行签到任务（无需再次添加，只需要实现了_sign方法即可）
+        :return:
+        """
+        ret = []
+
+        if self.check_run_task_permission("lucky"):
+            # 抽奖任务
+            if self.__lucky_task_run():
+                self.lock_task("lucky")
+                ret.append(True)
+        else:
+            self.push_msg("今日抽奖任务已完成!")
+
+        return all(ret)
+
+    def last_task_run(self, *args, **kwargs):
+        # 打印用户信息任务（方便统计）
+        self._print_userinfo()
+
+    def __lucky_task_run(self):
+        """
+        抽奖
+        :return:
+        """
+        lucky_urls = [
+            "https://m.cloud.189.cn/v2/drawPrizeMarketDetails.action?taskId=TASK_SIGNIN&activityId=ACT_SIGNIN",
+            "https://m.cloud.189.cn/v2/drawPrizeMarketDetails.action?taskId=TASK_SIGNIN_PHOTOS&activityId=ACT_SIGNIN",
+            "https://m.cloud.189.cn/v2/drawPrizeMarketDetails.action?taskId=TASK_2022_FLDFS_KJ&activityId=ACT_SIGNIN"
+        ]
+
+        lucky_index = 0
+
+        ret = []
+
+        for lucky_url in lucky_urls:
+            lucky_index += 1
+            response = self.session.get(lucky_url)
+            try:
+                res_json = response.json()
+                if res_json.get("errorCode"):
+                    self.push_msg(f"抽奖序号: {lucky_index} 请勿重复抽奖, 今日已经抽奖")
+                else:
+                    self.push_msg(f"抽奖序号: {lucky_index} 抽奖成功, 获得抽奖奖励: {res_json.get('description')}")
+                ret.append(True)
+            except Exception as e:
+                self.push_msg(f"抽奖序号: {lucky_index} 抽奖异常, 原因：{e}")
+                ret.append(False)
+        return all(ret)
+
+    def _print_userinfo(self):
+        userinfo = self._get_userinfo()
+        if userinfo is not None and userinfo["res_message"] == "成功":
+            userinfo = UserInfoData.model_validate(userinfo)
+            self.push_msg(
+                f"用户空间容量：\n可用{round(userinfo.available / 1073741824, 2)} GB\n总共{round(userinfo.capacity / 1073741824, 2)} GB")
+        else:
+            self.push_msg("获取用户信息失败")
+
+    def _get_userinfo(self):
+        """
+        获取用户信息
+        :return:
+        """
+        url = "https://cloud.189.cn/api/open/user/getUserInfoForPortal.action"
+
+        response = self.session.get(url, headers=self.base_headers)
+
+        try:
+            return response.json()
+        except:
+            self.push_msg(response.text)
+            return None
 
     def __prepare_for_login(self):
         """
@@ -250,11 +245,11 @@ class TY(LoginAndSignTemplate):
 
         # 发送判断是否验证码检测请求：needcaptcha.do
         if self.__check_need_captcha():
-            self.print("检测到需要进行滑块拼图验证")
+            self.push_msg("检测到需要进行滑块拼图验证")
             attempts = 3
-            self.print(f"正在尝试（{attempts}次）后台自动破解...")
+            self.push_msg(f"正在尝试（{attempts}次）后台自动破解...")
             for attempt in range(attempts):
-                self.print(f"正在尝试第{attempt + 1}次破解...")
+                self.push_msg(f"正在尝试第{attempt + 1}次破解...")
                 # 获取滑块验证码数据
                 captcha_data = CaptchaData.model_validate(self.__get_captcha_data(second_redirect_url).get("data"))
                 # 解析滑块验证码
@@ -291,14 +286,15 @@ class TY(LoginAndSignTemplate):
                 pass_en_data = json.loads(callback).get("data")
                 # 如果验证通过，则会返回加密数据，否则会返回None
                 if pass_en_data:
-                    self.print("滑块验证码已通过!")
-                    self.print("正在解密返回结果...")
+                    self.push_msg("滑块验证码已通过!")
+                    self.push_msg("正在解密返回结果...")
                     pass_captcha_data = aes_decrypt(pass_en_data, b64_uuid)
                     self.__pass_captcha_data = PassCaptchaData.model_validate_json(pass_captcha_data)
-                    self.print("解密成功!")
+                    self.push_msg("解密成功!")
                     break
                 else:
-                    self.print("滑块验证码破解失败!")
+                    self.push_msg("滑块验证码破解失败!")
+            self.clear_captcha_images()
 
     def __fetch_redirect_url(self, request_url: str):
         """
@@ -307,7 +303,7 @@ class TY(LoginAndSignTemplate):
         :return: 重定向链接
         """
         # 发送请求，并停止重定向
-        response = self.session.get(request_url, headers=self._base_headers, allow_redirects=False)
+        response = self.session.get(request_url, headers=self.base_headers, allow_redirects=False)
         # 获取响应头中的重定向链接
         return response.headers["Location"]
 
@@ -325,7 +321,7 @@ class TY(LoginAndSignTemplate):
             "appKey": self.__app_conf_res_data.appKey
         }
         # 发送请求
-        response = self.session.post(captcha_url, headers=self._base_headers, data=data)
+        response = self.session.post(captcha_url, headers=self.base_headers, data=data)
         if response.text == "1":
             return True
         return False
@@ -388,6 +384,14 @@ class TY(LoginAndSignTemplate):
         # 数组中第一个值就是需要移动的x轴距离
         return parse_result[0]
 
+    @property
+    def captcha_target_img(self):
+        return os.path.join(self.root_dir_path, f"{self.hash_value}_target.png")
+
+    @property
+    def captcha_background_img(self):
+        return os.path.join(self.root_dir_path, f"{self.hash_value}_background.png")
+
     def __handle_captcha_image(self, captcha_data: CaptchaData):
         """
         处理滑块验证码图片
@@ -398,16 +402,16 @@ class TY(LoginAndSignTemplate):
         target_image_base64 = captcha_data.front.split(",")[1]
         background_image_base64 = captcha_data.bg.split(",")[1]
         # 保存小滑块图片
-        self.__save_captcha_image(target_image_base64, "target.png")
+        self.__save_captcha_image(target_image_base64, self.captcha_target_img)
         # 保存背景图片
-        self.__save_captcha_image(background_image_base64, "background.png")
+        self.__save_captcha_image(background_image_base64, self.captcha_background_img)
 
     def __read_target_captcha_image(self):
         """
         读取目标图片
         :return:
         """
-        with open(os.path.join(self._set_files_dir(), "target.png"), 'rb') as file:
+        with open(self.captcha_target_img, 'rb') as file:
             return file.read()
 
     def __read_background_captcha_image(self):
@@ -415,10 +419,10 @@ class TY(LoginAndSignTemplate):
         读取背景图片
         :return:
         """
-        with open(os.path.join(self._set_files_dir(), "background.png"), 'rb') as file:
+        with open(self.captcha_background_img, 'rb') as file:
             return file.read()
 
-    def __save_captcha_image(self, image_base64, file_name):
+    def __save_captcha_image(self, image_base64, image_path: str):
         """
         保存验证码图片
         :param image_base64: base64编码的图片文本格式
@@ -432,8 +436,18 @@ class TY(LoginAndSignTemplate):
         img_binary = base64.b64decode(img_data)
 
         # 写入图片文件
-        with open(os.path.join(self._set_files_dir(), file_name), 'wb') as file:
+        with open(image_path, 'wb') as file:
             file.write(img_binary)
+
+    def clear_captcha_images(self):
+        """
+        清除验证码图片
+        :return:
+        """
+        if os.path.exists(self.captcha_target_img):
+            os.remove(self.captcha_target_img)
+        if os.path.exists(self.captcha_background_img):
+            os.remove(self.captcha_background_img)
 
     def __rsa_encrypt_for_captcha(self, data: str):
         """

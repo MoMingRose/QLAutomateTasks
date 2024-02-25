@@ -23,12 +23,12 @@ if __name__ == '__main__':
     tasks = WEB_TASKS + SOFTWARE_TASKS
 
     for task in tasks:
-        if os.environ.get("IS_DEBUG_TASKS"):
-            if task.TAG not in ["天翼云盘"]:
+        if os.environ.get("IS_DEBUG_TASKS") == "True":
+            if task.TAG not in ["葫芦侠三楼"]:
                 continue
         global_run(task, task.TAG)
 
     from notify import send
 
-    send("自写签到脚本任务", "\n".join(msg_list))
+    send("MoMingLog自动任务通知", "\n".join(msg_list))
     msg_list.clear()

@@ -12,19 +12,19 @@ msg_list = []
 
 
 def global_run(obj, tag: str, arg=None):
-    print(f"开始{tag}签到任务".center(50, "-"))
-    msg_list.append(f"开始{tag}签到任务".center(20, "-"))
+    print(f"开始{tag}任务".center(30, "🟢"))
+    msg_list.append(f"开始{tag}任务".center(15, "🔆"))
     try:
         if arg:
-            msg_list.append(obj(arg).result())
+            msg_list.append(obj(arg).result)
         else:
-            msg_list.append(obj().result())
+            msg_list.append(obj().result)
     except Exception as e:
-        print(f"{tag}签到任务出现异常：{e}")
-        msg_list.append(f"{tag}签到任务出现异常：{e}")
+        print(f"{tag}任务出现异常：{e}")
+        msg_list.append(f"‼️‼️{tag}任务出现异常：{e}")
 
-    print(f"结束{tag}签到任务".center(50, "-"))
-    msg_list.append(f"结束{tag}签到任务".center(20, "-"))
+    print(f"结束{tag}任务".center(30, "🟢"))
+    msg_list.append(f"结束{tag}任务".center(15, "🔆"))
     print()
 
 
