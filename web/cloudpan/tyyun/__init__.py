@@ -16,8 +16,8 @@ import requests
 import ujson
 
 import config
-from common.base_config import BaseUserConfig
 from common.base import BaseFileStorageTemplateForAccount
+from common.base_config import BaseUserConfig
 from utils.crypt_utils import rsa_encrypt, aes_encrypt, aes_decrypt
 from utils.generator_utils import uuid_generator, rates_generator
 from utils.ocr_utils import slide_match
@@ -48,7 +48,7 @@ class TY(BaseFileStorageTemplateForAccount):
             self.push_msg(e)
             return False
 
-        self.push_msg("正在准备登录...")
+        self.push_msg("正在准备登录...", is_push=False)
         # 登录前期准备工作
         # 登录链接
         login_url = "https://open.e.189.cn/api/logbox/oauth2/loginSubmit.do"
@@ -245,11 +245,11 @@ class TY(BaseFileStorageTemplateForAccount):
 
         # 发送判断是否验证码检测请求：needcaptcha.do
         if self.__check_need_captcha():
-            self.push_msg("检测到需要进行滑块拼图验证")
+            self.push_msg("检测到需要进行滑块拼图验证", is_push=False)
             attempts = 3
-            self.push_msg(f"正在尝试（{attempts}次）后台自动破解...")
+            self.push_msg(f"正在尝试（{attempts}次）后台自动破解...", is_push=False)
             for attempt in range(attempts):
-                self.push_msg(f"正在尝试第{attempt + 1}次破解...")
+                self.push_msg(f"正在尝试第{attempt + 1}次破解...", is_push=False)
                 # 获取滑块验证码数据
                 captcha_data = CaptchaData.model_validate(self.__get_captcha_data(second_redirect_url).get("data"))
                 # 解析滑块验证码
@@ -287,13 +287,13 @@ class TY(BaseFileStorageTemplateForAccount):
                 # 如果验证通过，则会返回加密数据，否则会返回None
                 if pass_en_data:
                     self.push_msg("滑块验证码已通过!")
-                    self.push_msg("正在解密返回结果...")
+                    self.push_msg("正在解密返回结果...", is_push=False)
                     pass_captcha_data = aes_decrypt(pass_en_data, b64_uuid)
                     self.__pass_captcha_data = PassCaptchaData.model_validate_json(pass_captcha_data)
-                    self.push_msg("解密成功!")
+                    self.push_msg("解密成功!", is_push=False)
                     break
                 else:
-                    self.push_msg("滑块验证码破解失败!")
+                    self.push_msg("滑块验证码破解失败!", is_push=False)
             self.clear_captcha_images()
 
     def __fetch_redirect_url(self, request_url: str):

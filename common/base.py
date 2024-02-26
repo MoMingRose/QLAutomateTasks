@@ -308,7 +308,7 @@ class BaseTemplate(ABC):
                 self.push_msg(f"{primary_key} 已过期，需要重新获取!")
                 is_need_fetch = True
             else:
-                self.push_msg(f"{primary_key} 未过期，无需重新获取")
+                self.push_msg(f"{primary_key} 未过期，无需重新获取", is_push=False)
 
             if is_need_fetch:
                 self.session = requests.Session()

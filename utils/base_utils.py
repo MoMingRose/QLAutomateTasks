@@ -25,6 +25,7 @@ def global_run(obj, tag: str, arg=None):
 
     print(f"结束{tag}任务".center(20, "🟢"))
     msg_list.append(f"结束{tag}任务".center(15, "🔆"))
+    msg_list.append(" ")
     print()
 
 
