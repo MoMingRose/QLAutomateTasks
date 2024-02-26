@@ -37,10 +37,10 @@ class JMKJ(BaseFileStorageTemplateForAccount):
         try:
             res_json = response.json()
             if "登录成功" not in response.text:
-                raise AttributeError(f"{self._username}登录失败, {res_json['msg']}")
+                raise AttributeError(f"登录失败, {res_json['msg']}")
             return True
         except:
-            raise AttributeError(f"{self._username}登录失败")
+            raise AttributeError(f"登录失败")
 
     def build_base_headers(self) -> dict:
         return {
@@ -133,7 +133,7 @@ class JMKJ(BaseFileStorageTemplateForAccount):
             self.__semaphore.acquire()
             threading.Thread(target=self.__forum_sign_thread, args=(url, forum_id)).start()
 
-        self.push_msg(f"{self._username}，版块签到完成，共增加经验：{self.__exp_add}")
+        self.push_msg(f"版块签到完成，共增加经验：{self.__exp_add}")
         return True
 
     def __homepage_sign(self):
@@ -150,10 +150,10 @@ class JMKJ(BaseFileStorageTemplateForAccount):
             lianxu = res_json.get("lianxu")  # 连续签到天数
 
             if res_json.get("err") == 0 and "签到成功" in info:
-                self.push_msg(f"{self._username}，主页签到成功, 累计签到{leiji}天，连续签到{lianxu}天")
+                self.push_msg(f"主页签到成功, 累计签到{leiji}天，连续签到{lianxu}天")
             else:
-                self.push_msg(f"{self._username}，主页签到失败, {info}, 累计签到{leiji}天，连续签到{lianxu}天")
+                self.push_msg(f"主页签到失败, {info}, 累计签到{leiji}天，连续签到{lianxu}天")
             return True
         except:
-            self.push_msg(f"{self._username}，主页签到失败, {response.text}")
+            self.push_msg(f"主页签到失败, {response.text}")
             return False

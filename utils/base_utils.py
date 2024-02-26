@@ -12,7 +12,7 @@ msg_list = []
 
 
 def global_run(obj, tag: str, arg=None):
-    print(f"开始{tag}任务".center(30, "🟢"))
+    print(f"开始{tag}任务".center(20, "🟢"))
     msg_list.append(f"开始{tag}任务".center(15, "🔆"))
     try:
         if arg:
@@ -23,7 +23,7 @@ def global_run(obj, tag: str, arg=None):
         print(f"{tag}任务出现异常：{e}")
         msg_list.append(f"‼️‼️{tag}任务出现异常：{e}")
 
-    print(f"结束{tag}任务".center(30, "🟢"))
+    print(f"结束{tag}任务".center(20, "🟢"))
     msg_list.append(f"结束{tag}任务".center(15, "🔆"))
     print()
 

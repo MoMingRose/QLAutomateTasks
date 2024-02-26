@@ -36,13 +36,25 @@ class BaseTemplate(ABC):
 
         if self.account_list is None:
             raise Exception("账号列表为空，请确认子类中实现了build_account_list方法")
-
-        t = 1
+        t = 0
+        x = {
+            0: "0️⃣",
+            1: "1️⃣",
+            2: "2️⃣",
+            3: "3️⃣",
+            4: "4️⃣",
+            5: "5️⃣",
+            6: "6️⃣",
+            7: "7️⃣",
+            8: "8️⃣",
+            9: "9️⃣",
+            10: "🔟"
+        }
         # 初始化存放推送消息的列表
         self.push_msg_list = []
         # 遍历账号列表中的所有账号
         for username, password in self.account_list:
-
+            s = x[t] * 4
             # 初始化请求相关数据
             self.session = requests.Session()
             self.base_headers = self.build_base_headers()
@@ -52,7 +64,7 @@ class BaseTemplate(ABC):
             self.current_user_config_data = self.load_current_user_config_data(username, password, *args, **kwargs)
             # 初始化推送用户名, 如果环境变量IS_SEND_REAL_NAME为True，则显示实际用户名，否则显示其他
             self.push_username = f"【{username}】" if config.GlobalConfig.IS_SEND_REAL_NAME else f"【账号{t}】"
-            self.push_msg_list.append(f"⬇️⬇️⬇️⬇️ {self.push_username} ⬇️⬇️⬇️⬇️")
+            self.push_msg_list.append(f"{s}{self.push_username}{s}")
 
             # 初始化账号密码
             self._username = username
@@ -63,11 +75,17 @@ class BaseTemplate(ABC):
                 self.__prepare_task_run(username, password, *args, **kwargs)
                 # 执行基础任务
                 self._base_task_run(username, password, *args, **kwargs)
+            except AttributeError as e:
+                self.push_msg("⁉️" + str(e))
             except Exception as e:
                 self.push_msg("❌ " + str(e))
+
             finally:
-                t += 1
-                self.push_msg(f"⬆️⬆️⬆️⬆️ {self.push_username} ⬆️⬆️⬆️⬆️", is_print=False)
+                if t < 10:
+                    t += 1
+                else:
+                    t = 0
+                self.push_msg(f"{s}{self.push_username}{s}", is_print=False)
 
     @abstractmethod
     def build_account_list(self, userConfig: BaseUserConfig, *args, **kwargs) -> List[list]:
@@ -252,8 +270,8 @@ class BaseTemplate(ABC):
                 return False
             return result
         else:
-            self.push_msg(f"{primary_key} 获取失败", is_push=False)
-            return False
+            # 关键数据都没获取成功，那么当前账号的任务可以直接停止了
+            raise Exception(f"{primary_key} 获取失败，停止执行任务")
 
     def __prepare_task_run(self, *args, **kwargs):
         """
@@ -289,6 +307,8 @@ class BaseTemplate(ABC):
             if self.check_expire_task_run():
                 self.push_msg(f"{primary_key} 已过期，需要重新获取!")
                 is_need_fetch = True
+            else:
+                self.push_msg(f"{primary_key} 未过期，无需重新获取")
 
             if is_need_fetch:
                 self.session = requests.Session()
@@ -366,6 +386,9 @@ class BaseTemplate(ABC):
 
     @property
     def result(self):
+        return self.get_push_msg()
+
+    def __str__(self):
         return self.get_push_msg()
 
 
