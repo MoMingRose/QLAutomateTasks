@@ -108,7 +108,7 @@ class TY(BaseFileStorageTemplateForAccount):
                 return False
             return True
         except Exception as e:
-            self.push_msg("检查cookie是否过期异常，原因：", e)
+            self.push_msg("检查cookie是否过期任务执行异常，原因：", e, is_push=False)
             return True
 
     def sign_task_run(self, *args, **kwargs) -> bool:

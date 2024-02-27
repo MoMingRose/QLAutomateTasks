@@ -7,7 +7,6 @@
 """
 import base64
 import binascii
-import json
 from typing import Union
 
 import rsa

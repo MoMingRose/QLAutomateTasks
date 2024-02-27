@@ -13,6 +13,13 @@ from common.base_config import BaseUserConfig
 class GlobalConfig:
     IS_DEBUG = True
     IS_SEND_REAL_NAME: bool = os.environ.get("IS_SEND_REAL_NAME", False) == "True"  # 是否推送真实的昵称
+    PROJECT_PATH = os.path.dirname(__file__)  # 项目目录
+
+    # 默认的依赖对照表
+    DEPENDENCY_TABLE = {
+        "python-dotenv": "dotenv",
+        "pycryptodome": "Crypto",
+    }
 
 
 class DefaultUserConfig:
