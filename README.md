@@ -1,12 +1,12 @@
 ### 青龙面板拉库命令：
 
 ```shell
-ql repo https://github.com/MoMingRose/QLAutomateTasks.git "一键任务执行" "docs|gitignore|README" "common|software|utils|web|config.py|notify.py"
+ql repo https://github.com/MoMingRose/QLAutomateTasks.git "一键" "" "*" "" "py|txt"
 ```
 
 ### 所需环境依赖如下:
 
-已添加自动安装依赖脚本，运行“`一键任务执行.py`”脚本前，请先执行`一键依赖安装.py`脚本
+已添加自动安装依赖脚本，运行“`一键任务执行.py`”脚本前，请先执行`一键依赖安装.py`脚本，执行完成后建议禁用此定时任务
 > [!TIP]
 > 如果是Docker拉取的青龙容器，建议拉取debian版本的，因为alpine不能安装ddddocr库（亲测）
 > > 1. [ddddocr库](https://github.com/sml2h3/ddddocr)，我主要用来进行天翼云盘的滑块验证码识别，如果不介意天翼云盘用不了，可以选择不安装ddddocr依赖
