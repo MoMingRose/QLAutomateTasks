@@ -6,20 +6,11 @@ ql repo https://github.com/MoMingRose/QLAutomateTasks.git "一键任务执行" "
 
 ### 所需环境依赖如下:
 
+已添加自动安装依赖脚本，运行“`一键任务执行.py`”脚本前，请先执行`一键依赖安装.py`脚本
 > [!TIP]
 > 如果是Docker拉取的青龙容器，建议拉取debian版本的，因为alpine不能安装ddddocr库（亲测）
 > > 1. [ddddocr库](https://github.com/sml2h3/ddddocr)，我主要用来进行天翼云盘的滑块验证码识别，如果不介意天翼云盘用不了，可以选择不安装ddddocr依赖
 > > 2. 当然，正常情况下是不会跳出来验证码，自然就用不到ddddocr库
-
-```text
-pydantic
-requests
-rsa
-pycryptodome
-ujson 
-python-dotenv 
-ddddocr
-```
 
 ### 此项目支持的签到任务状态如下
 
@@ -48,14 +39,14 @@ ddddocr
 > > 不支持账号密码模拟登陆方式的任务格式同上\
 > > 例如阿里云盘: `昵称&refresh_token`
 
-| 任务名称                                          | 多账号 | 默认环境变量             | 使用方式          | 功能                           |
-|-----------------------------------------------|-----|--------------------|---------------|------------------------------|
-| 葫芦侠三楼                                         | ✅   | `hlx_userinfo`     | 账号密码          | 全板块签到，领取经验                   |
-| 芥末空间                                          | ✅   | `jmkj_userinfo`    | 账号密码          | 1. 全板块签到，获取经验<br>2.主页签到，领取芥末 |
-| [阿里云盘](https://www.alipan.com/)               | ✅   | `alyp_userinfo`    | refresh_token | 每日签到，领取免费会员和空间               |
-| [天翼云盘](https://cloud.189.cn/)                 | ✅   | `tyyp_userinfo`    | 账号密码          | 每日签到，领取空间                    |
-| [MT论坛](https://bbs.binmt.cc/?fromuid=123380)  | ✅   | `mt_userinfo`      | 账号密码          | 每日签到，领取金币                    |
-| [MIUI历史版本(刷机包)](https://miuiver.com/)         | ✅   | `miuiver_userinfo` | 账号密码          | 每日签到，领取固定1积分                 |
+| 任务名称                                                    | 多账号 | 默认环境变量             | 使用方式          | 功能                           |
+|---------------------------------------------------------|-----|--------------------|---------------|------------------------------|
+| 葫芦侠三楼                                                   | ✅   | `hlx_userinfo`     | 账号密码          | 全板块签到，领取经验                   |
+| 芥末空间                                                    | ✅   | `jmkj_userinfo`    | 账号密码          | 1. 全板块签到，获取经验<br>2.主页签到，领取芥末 |
+| [阿里云盘](https://www.alipan.com/)                         | ✅   | `alyp_userinfo`    | refresh_token | 每日签到，领取免费会员和空间               |
+| [天翼云盘](https://cloud.189.cn/)                           | ✅   | `tyyp_userinfo`    | 账号密码          | 每日签到，领取空间                    |
+| [MT论坛](https://bbs.binmt.cc/?fromuid=123380)            | ✅   | `mt_userinfo`      | 账号密码          | 每日签到，领取金币                    |
+| [MIUI历史版本(刷机包)](https://miuiver.com/)                   | ✅   | `miuiver_userinfo` | 账号密码          | 每日签到，领取固定1积分                 |
 | [V2Free](https://w1.v2free.top/auth/register?code=8EZr) | ✅   | `v2free_userinfo`  | 账号密码          | 每日签到，领流量                     |
 
 ### 阿里云盘 refresh_token 获取方式
