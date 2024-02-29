@@ -37,7 +37,7 @@ class MIUIVER(BaseFileStorageTemplateForAccount):
             "action": "mobantu_login"
         }
 
-        response = self.session.post(url, data=data)
+        response = self.session.post(url, data=data, timeout=5)
         result = response.text
         if result in ["1", 1]:
             # return "cookie", self.session.cookies.get_dict(), True
@@ -58,8 +58,8 @@ class MIUIVER(BaseFileStorageTemplateForAccount):
         检查cookie是否过期
         :return: 
         """
-        url = "https://miuiver.com/user-profile/?action=info"
-        response = self.session.get(url)
+        url = "https://miuiver.com/user-profile/"
+        response = self.session.get(url, timeout=5)
         html = response.text
         if "退出登录" not in html:
             return True
@@ -78,7 +78,7 @@ class MIUIVER(BaseFileStorageTemplateForAccount):
         data = {
             "action": "epd_checkin"
         }
-        response = self.session.post(url, data=data)
+        response = self.session.post(url, data=data, timeout=5)
         try:
             res_json = response.json()
             status = res_json.get("status")
