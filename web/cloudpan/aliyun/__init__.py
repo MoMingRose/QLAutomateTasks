@@ -8,8 +8,8 @@
 from typing import Tuple
 
 import config
-from common.base_config import BaseUserConfig
 from common.base import BaseFileStorageTemplateForToken
+from common.base_config import BaseUserConfig
 
 
 class AL(BaseFileStorageTemplateForToken):
@@ -75,7 +75,7 @@ class AL(BaseFileStorageTemplateForToken):
                     f"今日已签到, 本月累计签到天数: {signInCount}, 今天签到日志: {reward_name}, {reward_desc}, {reward_notice}, {reward_subNotice}")
 
             return True
-        elif res_json.get("message") == "not login":
+        elif res_json.get("message") in ["not login", "token expired"]:
             self.push_msg("accessToken已经失效，重新获取中...")
             self.fetch_primary_data(*args, **kwargs)
             return self.sign_task_run(*args, **kwargs)
@@ -97,7 +97,9 @@ class AL(BaseFileStorageTemplateForToken):
         access_token = self.__request_assess_token(refresh_token=token)
         # 判断是否获取成功
         if access_token:
-            # 能刷新，则表示未过期，返回False
+            # 能刷新，则表示未过期，返回False，顺便更新一下access_token
+            self.current_user_config_data["Authorization"] = f"Bearer {access_token}"
+            self.flash_current_user_config_data()
             return False
         return True
 
