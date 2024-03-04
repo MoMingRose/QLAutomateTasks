@@ -1,3 +1,5 @@
+#### 附赠一个花了几天自写的自动添加、更新、追加JD_COOKIE的软件 [去下载](https://github.com/MoMingRose/QLAutomateTasks/releases)
+
 ### 青龙面板拉库命令：
 
 ```shell
