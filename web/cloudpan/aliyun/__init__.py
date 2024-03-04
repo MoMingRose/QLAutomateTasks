@@ -97,9 +97,7 @@ class AL(BaseFileStorageTemplateForToken):
         access_token = self.__request_assess_token(refresh_token=token)
         # 判断是否获取成功
         if access_token:
-            # 能刷新，则表示未过期，返回False，顺便更新一下access_token
-            self.current_user_config_data["Authorization"] = f"Bearer {access_token}"
-            self.flash_current_user_config_data()
+            # 能刷新，则表示未过期，返回False
             return False
         return True
 
@@ -120,6 +118,7 @@ class AL(BaseFileStorageTemplateForToken):
             if access_token:
                 # 保存access_token
                 self.current_user_config_data["Authorization"] = f"Bearer {access_token}"
+                self.session.headers.update({"Authorization": f"Bearer {access_token}"})
                 self.flash_current_user_config_data()
                 return access_token
         except Exception as e:

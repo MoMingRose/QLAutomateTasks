@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     for task in tasks:
         if os.environ.get("IS_DEBUG_TASKS") == "True":
-            if task.TAG not in ["V2Free"]:
+            if task.TAG not in ["阿里云盘"]:
                 continue
         global_run(task, task.TAG)
 
