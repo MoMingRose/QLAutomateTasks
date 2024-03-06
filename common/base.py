@@ -222,6 +222,7 @@ class BaseTemplate(ABC):
             return res
         else:
             self.push_msg("✅ 今日签到任务已完成!")
+            return True
 
     def __pack_other_task(self, *args, **kwargs) -> bool | None:
         """
@@ -233,11 +234,16 @@ class BaseTemplate(ABC):
         # 判断默认执行的其他任务是否具有执行权限
         if self.check_run_task_permission("other_task"):
             res = self.other_task_run(*args, **kwargs)
+            # 如果返回None，则表示此方法体内部没有实现
+            if res is None:
+                # 为了避免触发不必要的重试，直接返回True
+                return True
             if res:
                 self.lock_task("other_task")
             return res
         else:
             self.push_msg("✅ 今日其他任务已完成!")
+            return True
 
     def __pack_last_task(self, *args, **kwargs):
         """
@@ -330,8 +336,15 @@ class BaseTemplate(ABC):
         :param kwargs: 扩展参数
         :return:
         """
-        self.__pack_sign_task(*args, **kwargs)
-        self.__pack_other_task(*args, **kwargs)
+        max_attempts = 3
+        attempts = 0
+        while attempts < max_attempts:
+            attempts += 1
+            if self.__pack_sign_task(*args, **kwargs) and self.__pack_other_task(*args, **kwargs):
+                break
+            else:
+                # 如果其中一个任务返回 False，则重新尝试
+                continue
         self.__pack_last_task(*args, **kwargs)
 
     def check_run_task_permission(self, task_name: str) -> bool:
