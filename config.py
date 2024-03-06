@@ -7,7 +7,8 @@
 """
 import os
 
-from common.base_config import BaseUserConfig
+from common.base_config import BaseUserConfig, TestEnvKey
+from utils.os_utils import get_env_value
 
 
 class GlobalConfig:
@@ -23,12 +24,41 @@ class GlobalConfig:
 
 
 class DefaultUserConfig:
-    V2FREEConfig = BaseUserConfig(tag="V2Free", env_key="v2free_userinfo", test_env=os.environ.get("V2FREE"))
-    MIUIVERConfig = BaseUserConfig(tag="MIUI历史版本（刷机包）", env_key="miuiver_userinfo",
-                                   test_env=os.environ.get("MIUIVER"))
-    JMKJConfig = BaseUserConfig(tag="芥末空间", env_key="jmkj_userinfo", test_env=os.environ.get("JMKJ"))
-    MTConfig = BaseUserConfig(tag="MT论坛", env_key="mt_userinfo", test_env=os.environ.get("MT"))
-    V2FreeConfig = BaseUserConfig(tag="V2free", test_env=os.environ.get("V2FREE"))
-    TYYPConfig = BaseUserConfig(tag="天翼云盘", env_key="tyyp_userinfo", test_env=os.environ.get("TYYP"))
-    HLXConfig = BaseUserConfig(tag="葫芦侠三楼", env_key="hlx_userinfo", test_env=os.environ.get("HLX"))
-    ALYPConfig = BaseUserConfig(tag="阿里云盘", env_key="alyp_userinfo", test_env=os.environ.get("ALYP"))
+    V2FreeConfig = BaseUserConfig(
+        # 用来标识任务名称
+        tag="V2Free",
+        # 环境变量中存放账号数据的key（会按照这个值来查找，可以自定义）
+        env_key="v2free_userinfo",
+        # 测试环境下的环境变量值（从.env文件中获取）
+        test_env=get_env_value(TestEnvKey.v2free)
+    )
+
+    MIUIVERConfig = BaseUserConfig(
+        tag="MIUI历史版本（刷机包）",
+        test_env=get_env_value(TestEnvKey.miuiver)
+    )
+
+    JMKJConfig = BaseUserConfig(
+        tag="芥末空间",
+        test_env=get_env_value(TestEnvKey.jmkj)
+    )
+
+    MTConfig = BaseUserConfig(
+        tag="MT论坛",
+        test_env=get_env_value(TestEnvKey.mt)
+    )
+
+    TYYPConfig = BaseUserConfig(
+        tag="天翼云盘",
+        test_env=get_env_value(TestEnvKey.tyyp)
+    )
+
+    HLXConfig = BaseUserConfig(
+        tag="葫芦侠三楼",
+        test_env=get_env_value(TestEnvKey.hlx)
+    )
+
+    ALYPConfig = BaseUserConfig(
+        tag="阿里云盘",
+        test_env=get_env_value(TestEnvKey.alyp)
+    )

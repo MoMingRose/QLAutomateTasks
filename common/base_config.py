@@ -5,6 +5,7 @@
 【创建时间】2024-02-23
 【功能描述】
 """
+from enum import Enum
 
 from pydantic import BaseModel, Field
 
@@ -36,3 +37,13 @@ class BaseUserConfig(BaseConfig):
         self.username = kwargs.get("username")
         self.password = kwargs.get("password")
         self.account_list = kwargs.get("account_list")
+
+
+class TestEnvKey(str, Enum):
+    v2free = "V2FREE"
+    miuiver = "MIUIVER"
+    jmkj = "JMKJ"
+    mt = "MT"
+    tyyp = "TYYP"
+    hlx = "HLX"
+    alyp = "ALYP"

@@ -7,8 +7,14 @@
 """
 import os
 
+try:
+    import ujson as json
+except:
+    import json
+
 from utils.base_utils import global_run
 from utils.base_utils import msg_list
+from utils.os_utils import get_env_value
 
 if __name__ == '__main__':
     try:
@@ -23,8 +29,8 @@ if __name__ == '__main__':
     tasks = WEB_TASKS + SOFTWARE_TASKS
 
     for task in tasks:
-        if os.environ.get("IS_DEBUG_TASKS") == "True":
-            if task.TAG not in ["阿里云盘"]:
+        if get_env_value("IS_DEBUG_TASKS"):
+            if task.TAG not in get_env_value("DEBUG_TASKS_LIST"):
                 continue
         global_run(task, task.TAG)
 
