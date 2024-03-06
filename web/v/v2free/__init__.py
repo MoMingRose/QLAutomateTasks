@@ -18,7 +18,7 @@ from common.base_config import BaseUserConfig
 
 
 class V2Free(BaseFileStorageTemplateForAccount):
-    V2FREE_DEFAULT_USER_CONFIG = config.DefaultUserConfig.V2FREEConfig
+    V2FREE_DEFAULT_USER_CONFIG = config.DefaultUserConfig.V2FreeConfig
     TAG = V2FREE_DEFAULT_USER_CONFIG.tag
 
     def __init__(self, userConfig: BaseUserConfig = V2FREE_DEFAULT_USER_CONFIG):
