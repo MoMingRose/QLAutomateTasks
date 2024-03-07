@@ -23,7 +23,7 @@ class JMKJ(BaseFileStorageTemplateForAccount):
         self.__lock = threading.Lock()
         super().__init__(
             userConfig,
-            "jiemo_userinfo"
+            "jmkj_userinfo"
         )
 
     def fetch_primary_data(self, username: str, password: str, *args, **kwargs) -> bool | Tuple[str, any, bool]:
