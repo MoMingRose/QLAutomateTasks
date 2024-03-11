@@ -5,6 +5,7 @@
 【创建时间】2024-02-25
 【功能描述】
 """
-from .v2free import V2Free
+# from .v2free import V2Free
 
-V_TASKS = [V2Free]
+# V_TASKS = [V2Free]
+V_TASKS = []
