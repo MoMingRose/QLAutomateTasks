@@ -5,7 +5,6 @@
 【创建时间】统一运行签到任务的入口
 【功能描述】
 """
-import os
 
 try:
     import ujson as json
@@ -36,5 +35,6 @@ if __name__ == '__main__':
 
     from notify import send
 
-    send("MoMingLog自动任务通知", "\n".join(msg_list))
-    msg_list.clear()
+    if msg_list:
+        send("MoMingLog自动任务通知", "\n".join(msg_list))
+        msg_list.clear()

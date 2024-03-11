@@ -30,7 +30,9 @@ class DefaultUserConfig:
         # 环境变量中存放账号数据的key（会按照这个值来查找，可以自定义）
         env_key="v2free_userinfo",
         # 测试环境下的环境变量值（从.env文件中获取）
-        test_env=get_env_value(TestEnvKey.v2free)
+        test_env=get_env_value(TestEnvKey.v2free),
+        # 此任务是否可用
+        is_available=False
     )
 
     MIUIVERConfig = BaseUserConfig(
