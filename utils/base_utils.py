@@ -14,18 +14,28 @@ msg_list = []
 def global_run(obj, tag: str, arg=None):
     print(f"开始{tag}任务".center(20, "🟢"))
     msg_list.append(f"开始{tag}任务".center(15, "🔆"))
+
+    is_pop = False
+
     try:
         if arg:
-            msg_list.append(obj(arg).result)
+            msg = obj(arg).result
         else:
-            msg_list.append(obj().result)
+            msg = obj().result
+
+        if "任务不可用" in msg:
+            msg_list.pop()
+            is_pop = True
+        else:
+            msg_list.append(msg)
     except Exception as e:
         print(f"{tag}任务出现异常：{e}")
         msg_list.append(f"‼️‼️{tag}任务出现异常：{e}")
 
     print(f"结束{tag}任务".center(20, "🟢"))
-    msg_list.append(f"结束{tag}任务".center(15, "🔆"))
-    msg_list.append(" ")
+    if not is_pop:
+        msg_list.append(f"结束{tag}任务".center(15, "🔆"))
+        msg_list.append(" ")
     print()
 
 

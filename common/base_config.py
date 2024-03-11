@@ -31,12 +31,14 @@ class BaseUserConfig(BaseConfig):
     username: str | None = Field(default=None, description="单账号传递方式：账号（与password配合）")
     password: str | None = Field(default=None, description="单账号传递方式：密码（与username配合）")
     account_list: list = Field(default=[], description="多账号传递方式：账号列表")
+    is_available: bool = Field(default=True, description="是否可用")
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.username = kwargs.get("username")
         self.password = kwargs.get("password")
         self.account_list = kwargs.get("account_list")
+        self.is_available = kwargs.get("is_available")
 
 
 class TestEnvKey(str, Enum):

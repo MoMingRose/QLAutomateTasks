@@ -29,8 +29,18 @@ class BaseTemplate(ABC):
         :param args: 扩展参数
         :param kwargs: 扩展参数
         """
+        # 初始化存放推送消息的列表
+        self.push_msg_list = []
+
         # 初始化任务标签
         self.tag = userConfig.tag
+
+        # 判断此任务是否可用
+        if not userConfig.is_available:
+            print(f"{self.tag}任务不可用，跳过此任务")
+            self.push_msg_list.append(f"{self.tag}任务不可用, 跳过此任务")
+            return
+
         # 初始化账号列表
         self.account_list = self.build_account_list(userConfig, *args, kwargs)
 
@@ -50,8 +60,7 @@ class BaseTemplate(ABC):
             9: "9️⃣",
             10: "🔟"
         }
-        # 初始化存放推送消息的列表
-        self.push_msg_list = []
+
         # 遍历账号列表中的所有账号
         for username, password in self.account_list:
             s = x[t] * 4
