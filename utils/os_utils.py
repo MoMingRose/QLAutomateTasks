@@ -31,9 +31,9 @@ def get_env_value(key: str | TestEnvKey) -> bool | int | float | list | dict | s
     if value is None:
         return None
     # 正则表达式匹配
-    if re.match(r"^(True|true|1)$", value):
+    if re.match(r"^(True|true)$", value):
         return True
-    elif re.match(r"^(False|false|0)$", value):
+    elif re.match(r"^(False|false)$", value):
         return False
     elif re.match(r"^\d+$", value):
         return int(value)
