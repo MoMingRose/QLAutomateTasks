@@ -5,11 +5,12 @@
 【创建时间】2024-02-24
 【功能描述】
 """
+import re
 from typing import Tuple
 
 import config
-from common.base_config import BaseUserConfig
 from common.base import BaseFileStorageTemplateForAccount
+from common.base_config import BaseUserConfig
 
 
 class MIUIVER(BaseFileStorageTemplateForAccount):
@@ -17,6 +18,7 @@ class MIUIVER(BaseFileStorageTemplateForAccount):
     TAG = MIUIVER_DEFAULT_USER_CONFIG.tag
 
     def __init__(self, userConfig: BaseUserConfig = MIUIVER_DEFAULT_USER_CONFIG):
+        self.html = None
         super().__init__(userConfig, "miuiver_userinfo")
 
     def build_base_headers(self) -> dict:
@@ -58,10 +60,9 @@ class MIUIVER(BaseFileStorageTemplateForAccount):
         检查cookie是否过期
         :return: 
         """
-        url = "https://miuiver.com/user-profile/"
-        response = self.session.get(url, timeout=5)
-        html = response.text
-        if "退出登录" not in html:
+        self.html = self.__request_user_profile()
+        if not self.html and "退出登录" not in self.html:
+            self.html = None
             return True
         return False
 
@@ -97,4 +98,21 @@ class MIUIVER(BaseFileStorageTemplateForAccount):
         pass
 
     def last_task_run(self, *args, **kwargs):
-        pass
+        html = self.html if self.html else self.__request_user_profile()
+        try:
+            # 提取当前积分
+            current_point = re.search(r'当前积分.*?(\d+).*?', html, re.S).group(1)
+            # 提取已用积分
+            used_point = re.search(r'已用积分.*?(\d+).*?', html, re.S).group(1)
+            self.push_msg(f"当前积分: {current_point}, 已用积分: {used_point}")
+        except:
+            self.push_msg("积分详情提取失败，请更新正则!")
+
+    def __request_user_profile(self) -> str:
+        """
+        获取用户信息
+        :return:
+        """
+        url = "https://miuiver.com/user-profile/"
+        response = self.session.get(url, timeout=5)
+        return response.text
