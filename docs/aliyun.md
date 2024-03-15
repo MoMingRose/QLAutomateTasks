@@ -35,8 +35,16 @@ JSON.parse(localStorage.token).refresh_token
 ![img.png](images/img3.4.png)
 
 
-## 方式二：扫码获取（快速，但不太安全）
+## 方式二：扫码获取（快速，但安全性未知）
 
-使用`Alist`提供的扫码功能获取，[前往扫码](https://alist.nn.ci/tool/aliyundrive/request.html)
-![img.png](images/img4.png)
-![img.png](images/img5.png)
+使用`Alist`提供的扫码功能获取，[前往扫码](https://alist.nn.ci/zh/guide/drivers/aliyundrive.html#%E5%88%B7%E6%96%B0%E4%BB%A4%E7%89%8C)
+
+点击“获取Token”
+![](./images/135417006192700.png)
+
+使用手机端APP扫码
+![](./images/135434285417000.png)
+
+扫完后，回来再次点击按钮
+![](./images/135529590110300.png)
+
