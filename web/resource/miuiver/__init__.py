@@ -9,17 +9,17 @@ import re
 from typing import Tuple
 
 import config
-from common.base import BaseFileStorageTemplateForAccount
-from common.base_config import BaseUserConfig
+from common.base import BaseFSTemplateForAccount
+from common.base_config import BaseTaskConfig
 
 
-class MIUIVER(BaseFileStorageTemplateForAccount):
-    MIUIVER_DEFAULT_USER_CONFIG = config.DefaultUserConfig.MIUIVERConfig
-    TAG = MIUIVER_DEFAULT_USER_CONFIG.tag
+class MIUIVER(BaseFSTemplateForAccount):
+    DEFAULT_TASK_CONFIG = config.DefaultTaskConfig.MIUIVERConfig
+    TAG = DEFAULT_TASK_CONFIG.task_name
 
-    def __init__(self, userConfig: BaseUserConfig = MIUIVER_DEFAULT_USER_CONFIG):
+    def __init__(self, taskConfig: BaseTaskConfig = DEFAULT_TASK_CONFIG):
         self.html = None
-        super().__init__(userConfig, "miuiver_userinfo")
+        super().__init__(taskConfig, "miuiver_userinfo")
 
     def build_base_headers(self) -> dict:
         return {

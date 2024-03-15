@@ -9,19 +9,16 @@ import re
 from typing import Tuple
 
 import config
-from common.base_config import BaseUserConfig
-from common.base import BaseFileStorageTemplateForAccount
+from common.base import BaseFSTemplateForAccount
+from common.base_config import BaseTaskConfig
 
 
-class MT(BaseFileStorageTemplateForAccount):
-    MT_DEFAULT_USER_CONFIG = config.DefaultUserConfig.MTConfig
-    TAG = MT_DEFAULT_USER_CONFIG.tag
+class MT(BaseFSTemplateForAccount):
+    MT_DEFAULT_USER_CONFIG = config.DefaultTaskConfig.MTConfig
+    TAG = MT_DEFAULT_USER_CONFIG.task_name
 
-    def __init__(self, userConfig: BaseUserConfig = MT_DEFAULT_USER_CONFIG):
-        super().__init__(
-            userConfig,
-            "mt_userinfo"
-        )
+    def __init__(self, taskConfig: BaseTaskConfig = MT_DEFAULT_USER_CONFIG):
+        super().__init__(taskConfig, "mt_userinfo")
 
     def fetch_primary_data(self, username: str, password: str, *args, **kwargs) -> bool | Tuple[str, any, bool]:
         url = "https://bbs.binmt.cc/member.php"

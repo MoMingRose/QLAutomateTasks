@@ -22,6 +22,7 @@ class AppConfig(BaseModel):
     reqId: str = Field(..., description="请求ID")
     paramId: str = Field(..., description="参数ID")
 
+
 class EncryptConfig(BaseModel):
     """
     encryptConf.do 相关响应数据
@@ -41,13 +42,14 @@ class CaptchaData(BaseModel):
     front: str = Field(..., description="前景图")
     token: str = Field(..., description="token")
 
+
 class PassCaptchaData(BaseModel):
     """
     拼图通过验证 相关响应数据
     """
     captchaType: int = Field(default=1, description="验证码类型，1：拼图")
     token: str = Field(default="", description="token")
-    validate: str = Field(default="", description="验证结果")
+    validate_result: str = Field(default="", description="验证结果")
 
 
 class UserInfoData(BaseModel):

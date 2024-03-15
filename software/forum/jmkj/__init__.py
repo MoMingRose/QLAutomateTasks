@@ -9,22 +9,19 @@ import threading
 from typing import Tuple
 
 import config
-from common.base_config import BaseUserConfig
-from common.base import BaseFileStorageTemplateForAccount
+from common.base import BaseFSTemplateForAccount
+from common.base_config import BaseTaskConfig
 
 
-class JMKJ(BaseFileStorageTemplateForAccount):
-    JMKJ_DEFAULT_USER_CONFIG = config.DefaultUserConfig.JMKJConfig
-    TAG = JMKJ_DEFAULT_USER_CONFIG.tag
+class JMKJ(BaseFSTemplateForAccount):
+    JMKJ_DEFAULT_USER_CONFIG = config.DefaultTaskConfig.JMKJConfig
+    TAG = JMKJ_DEFAULT_USER_CONFIG.task_name
 
-    def __init__(self, userConfig: BaseUserConfig = JMKJ_DEFAULT_USER_CONFIG):
+    def __init__(self, taskConfig: BaseTaskConfig = JMKJ_DEFAULT_USER_CONFIG):
         self.__exp_add = 0
         self.__semaphore = threading.BoundedSemaphore(3)
         self.__lock = threading.Lock()
-        super().__init__(
-            userConfig,
-            "jmkj_userinfo"
-        )
+        super().__init__(taskConfig, "jmkj_userinfo")
 
     def fetch_primary_data(self, username: str, password: str, *args, **kwargs) -> bool | Tuple[str, any, bool]:
         url = "http://bbs.bbs.jvjyun.com/api/login"

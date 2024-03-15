@@ -39,40 +39,46 @@ def global_run(obj, tag: str, arg=None):
     print()
 
 
-def fetch_account_list(env_key: str = None, test_env: str = None) -> list:
+def fetch_account_list(env_key: str = None, up_split: str = "&", ups_split: str = "|") -> list:
     """
     从环境变量中获取账号密码列表
     :param env_key: 环境变量key
-    :param test_env: 需要测试的环境变量值
+    :param up_split: 账号密码间的分隔符
+    :param ups_split: 多个账号之间的分隔符
     :return: 账号密码列表
     """
     account_list = []
     # 测试环境变量值优先原则
-    userinfo = os.getenv(env_key) if test_env is None else test_env
+    userinfo = os.getenv(env_key)
     # 判断环境变量中是否存在账号密码
     if userinfo is not None:
-        # 判断格式是否正确
-        if "&" not in userinfo:
-            raise AttributeError("单账号密码格式错误：缺少“&”")
-        if userinfo.count("&") != userinfo.count("|") + 1:
-            raise AttributeError(
-                f"多账号密码格式错误，“&”与“|”符号数量不匹配\n\n检测“&”数量为：{userinfo.count('&')}个\n检测“|”数量为：{userinfo.count('|')}\n\n“|”+1 不等于 “&”")
+        # 判断账号密码分隔符是否不存在
+        if up_split not in userinfo:
+            # 不存在则抛出异常
+            raise AttributeError(f"单账号密码格式错误：请用“{up_split}”分离账号密码")
+        # 存在则判断账号密码分隔符与多账号分隔符数量是否匹配
+        if userinfo.count(up_split) != userinfo.count(ups_split) + 1:
+            # 如果不匹配，则抛出异常
+            raise AttributeError(f'''多账号密码格式错误： 请用“{ups_split}”分离多个账号
+    检测“{up_split}”数量为：{userinfo.count(up_split)}
+    检测“{ups_split}”数量为：{userinfo.count(ups_split)}
+    “{ups_split}”+1 不等于 “{up_split}”''')
 
-        # 判断是否存在|，存在则进行分割
-        if "|" in userinfo:
+        # 判断是否存在多账号分隔符，存在则进行分割
+        if ups_split in userinfo:
             # 表示环境变量中存在多账号密码，进行账号分割
-            userinfo_list = userinfo.split("|")
+            userinfo_list = userinfo.split(ups_split)
             # 遍历账号密码列表，进行账号密码分割
             for i in userinfo_list:
                 # 添加到账号列表中
-                account_list.append(i.split("&"))
+                account_list.append(i.split(up_split))
         else:
             # 表示环境变量中只存在单账号密码，进行账号密码分割
             # 添加到账号列表中
-            account_list.append(userinfo.split("&"))
+            account_list.append(userinfo.split(up_split))
     else:
         # 不存在账号密码，抛出异常
-        raise AttributeError(f"未在环境变量 {env_key} 中找到账号密码")
+        raise AttributeError(f"未在环境变量 {env_key} 中找到账号数据")
     return account_list
 
 

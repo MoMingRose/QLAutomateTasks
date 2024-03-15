@@ -11,20 +11,24 @@ from abc import ABC, abstractmethod
 from typing import List, Tuple
 
 import requests
-import ujson as json
+
+try:
+    import ujson as json
+except:
+    import json
 
 import config
-from config import BaseUserConfig
+from common.base_config import BaseTaskConfig
 from utils import base_utils
 from utils.base_utils import fetch_account_list
 from utils.crypt_utils import md5
 
 
 class BaseTemplate(ABC):
-    def __init__(self, userConfig: BaseUserConfig, *args, **kwargs):
+    def __init__(self, taskConfig: BaseTaskConfig, *args, **kwargs):
         """
         初始化
-        :param userConfig: 用户配置实例，里面有四种账号传递方式（账号密码/账号列表传入、env_key、test_env），仅有一种生效
+        :param taskConfig: 用户配置实例，里面有四种账号传递方式（账号密码/账号列表传入、env_key、test_env），仅有一种生效
         :param default_env_key: 环境变量默认的 key （对应的value存储着账号密码数据）
         :param args: 扩展参数
         :param kwargs: 扩展参数
@@ -33,16 +37,16 @@ class BaseTemplate(ABC):
         self.push_msg_list = []
 
         # 初始化任务标签
-        self.tag = userConfig.tag
+        self.task_name = taskConfig.task_name
 
         # 判断此任务是否可用
-        if not userConfig.is_available:
-            print(f"{self.tag}任务不可用，跳过此任务")
-            self.push_msg_list.append(f"{self.tag}任务不可用, 跳过此任务")
+        if not taskConfig.task_enable:
+            print(f"{self.task_name}任务不可用，跳过此任务")
+            self.push_msg_list.append(f"{self.task_name}任务不可用, 跳过此任务")
             return
 
         # 初始化账号列表
-        self.account_list = self.build_account_list(userConfig, *args, kwargs)
+        self.account_list = self.build_account_list(taskConfig, kwargs, *args)
 
         if self.account_list is None:
             raise Exception("账号列表为空，请确认子类中实现了build_account_list方法")
@@ -72,6 +76,7 @@ class BaseTemplate(ABC):
             # 初始化用户账号配置数据
             self.current_user_config_data = self.load_current_user_config_data(username, password, *args, **kwargs)
             # 初始化推送用户名, 如果环境变量IS_SEND_REAL_NAME为True，则显示实际用户名，否则显示其他
+            self.print_username = f"【{username}】" if config.GlobalConfig.IS_PRINT_REAL_NAME else f"【账号{t}】"
             self.push_username = f"【{username}】" if config.GlobalConfig.IS_SEND_REAL_NAME else f"【账号{t}】"
             self.push_msg_list.append(f"{s}{self.push_username}{s}")
 
@@ -97,10 +102,10 @@ class BaseTemplate(ABC):
                 self.push_msg(f"{s}{self.push_username}{s}", is_print=False)
 
     @abstractmethod
-    def build_account_list(self, userConfig: BaseUserConfig, *args, **kwargs) -> List[list]:
+    def build_account_list(self, taskConfig: BaseTaskConfig, *args, **kwargs) -> List[list]:
         """
         构建要运行任务的账号列表
-        :param userConfig: 用户配置
+        :param taskConfig: 用户配置
         :param args: 扩展参数
         :param kwargs: 扩展参数
         :return: 格式如：[[账号1，密码2], [账号2, 密码2], [昵称1, token1], [昵称2, cookie2]]的列表
@@ -381,7 +386,7 @@ class BaseTemplate(ABC):
         """
         if is_print:
             # 先在本地打印
-            print(self.push_username, *args, **kwargs)
+            print(self.print_username, *args, **kwargs)
         # 再将推送消息存放到列表中
         for arg in args:
             if is_push and isinstance(arg, str):
@@ -416,58 +421,62 @@ class BaseTemplate(ABC):
 
 class BaseQLTemplate(BaseTemplate, ABC):
 
-    def __init__(self, userConfig: BaseUserConfig, default_env_key: str, *args, **kwargs):
+    def __init__(self, taskConfig: BaseTaskConfig, default_env_key: str, *args, **kwargs):
 
         # 初始化环境变量key: 如果传入的环境变量key不存在，则使用默认的key（需要在子类__init__中传入）
-        self.env_key = userConfig.env_key if userConfig.env_key is not None else default_env_key
+        self.env_key = taskConfig.env_key if taskConfig.env_key is not None else default_env_key
 
-        super().__init__(userConfig, default_env_key, *args, **kwargs)
+        super().__init__(taskConfig, default_env_key, *args, **kwargs)
 
-    def build_account_list(self, userConfig: BaseUserConfig, *args, **kwargs) -> List[list]:
+    def build_account_list(self, taskConfig: BaseTaskConfig, *args, **kwargs) -> List[list]:
         """
         青龙面板所属的构建账号列表的方式（从环境变量中读取）
-        :param userConfig:
+        :param taskConfig:
         :param args:
         :param kwargs:
         :return:
         """
         account_list = []
         # 判断是否传入账号密码（其实就是判断是否是单账号，不推荐直接传入）
-        if userConfig.username is None or userConfig.password is None:
-            # 如果没有传入账号密码，则优先判断测试环境中是否有账号密码
-            if userConfig.test_env is not None:
-                # 使用测试环境中的账号密码
-                account_list = fetch_account_list(test_env=userConfig.test_env)
-            elif self.env_key is not None:
+        if taskConfig.username is None or taskConfig.password is None:
+            if self.env_key is not None:
                 # 使用正式环境变量中的账号密码
-                account_list = fetch_account_list(env_key=self.env_key)
+                account_list = fetch_account_list(
+                    env_key=self.env_key,
+                    up_split=taskConfig.up_split,
+                    ups_split=taskConfig.ups_split
+                )
             else:
                 # 否则直接抛出异常
                 raise AttributeError(
                     "请检查以下参数是否正确传入（选一个）: \n 1. 账号密码/昵称&token\n 2. 环境变量key\n3. 测试变量test_env")
         else:
             # 如果传入了账号密码，合并到账号列表中（懒得判断是否传入账号列表了，直接把它们合并）
-            account_list.append([userConfig.username, userConfig.password])
+            account_list.append([taskConfig.username, taskConfig.password])
 
         return account_list
 
 
-class BaseFileStorageTemplate(BaseQLTemplate, ABC):
+class BaseFSTemplate(BaseQLTemplate, ABC):
     """仅适用于文件存储的模板"""
 
-    def __init__(self, userConfig: BaseUserConfig, default_env_key: str):
-        self.root_dir_name = re.sub(r'[\\/:*?"<>|]', "_", userConfig.tag)
+    def __init__(self, taskConfig: BaseTaskConfig, default_env_key: str):
+        self.root_dir_name = re.sub(r'[\\/:*?"<>|]', "_", taskConfig.task_name)
         self.root_dir_path = self.get_root_dir()
         self.hash_value = ""
         self.__current_user_config_data_path = ""
-        super().__init__(userConfig, default_env_key)
+        super().__init__(taskConfig, default_env_key)
 
     def load_current_user_config_data(self, username: str, password: str, *args, **kwargs) -> dict:
-        self.hash_value = md5(username + self.tag)
-        self.__current_user_config_data_path = os.path.join(self.root_dir_path, f"{self.hash_value}_{self.tag}.json")
+        self.hash_value = md5(username + self.task_name)
+        self.__current_user_config_data_path = os.path.join(self.root_dir_path,
+                                                            f"{self.hash_value}_{self.task_name}.json")
         if os.path.exists(self.__current_user_config_data_path):
-            with open(self.__current_user_config_data_path, "r", encoding="utf-8") as fp:
-                return json.load(fp)
+            try:
+                with open(self.__current_user_config_data_path, "r", encoding="utf-8") as fp:
+                    return json.load(fp)
+            except:
+                return {}
         else:
             return {}
 
@@ -490,11 +499,11 @@ class BaseFileStorageTemplate(BaseQLTemplate, ABC):
         return root_dir
 
 
-class BaseFileStorageTemplateForToken(BaseFileStorageTemplate, ABC):
+class BaseFSTemplateForToken(BaseFSTemplate, ABC):
     """仅适用于令牌获取的模板"""
 
-    def __init__(self, userConfig: BaseUserConfig, default_env_key: str):
-        super().__init__(userConfig, default_env_key)
+    def __init__(self, taskConfig: BaseTaskConfig, default_env_key: str):
+        super().__init__(taskConfig, default_env_key)
 
     @abstractmethod
     def fetch_primary_data(self, nickname: str, token: str, *args, **kwargs) -> bool | Tuple[str, any, bool]:
@@ -513,12 +522,35 @@ class BaseFileStorageTemplateForToken(BaseFileStorageTemplate, ABC):
         return self.check_token_is_expire(token)
 
 
-class BaseFileStorageTemplateForAccount(BaseFileStorageTemplate, ABC):
+class BaseFSTemplateForAccount(BaseFSTemplate, ABC):
     """仅适用于账号获取的模板"""
 
-    def __init__(self, userConfig: BaseUserConfig, default_env_key: str):
-        super().__init__(userConfig, default_env_key)
+    def __init__(self, taskConfig: BaseTaskConfig, default_env_key: str):
+        super().__init__(taskConfig, default_env_key)
 
     @abstractmethod
     def fetch_primary_data(self, username: str, password: str, *args, **kwargs) -> bool | Tuple[str, any, bool]:
+        pass
+
+
+class BaseFSTemplateForCookie(BaseFSTemplate, ABC):
+    """仅适用于cookie获取的模板"""
+
+    def __init__(self, taskConfig: BaseTaskConfig, default_env_key: str):
+        super().__init__(taskConfig, default_env_key)
+
+    def fetch_primary_data(self, nickname: str, cookie: str, *args, **kwargs) -> bool | Tuple[str, any, bool]:
+        cookie_dict = requests.cookies.cookiejar_from_dict(
+            {c.split('=')[0]: c.split('=')[1] for c in cookie.split(';') if c.strip()})
+        self.session.cookies.update(cookie_dict)
+        return True
+        # return "cookie", cookie_dict, True
+
+    def check_expire_task_run(self) -> bool:
+        if self.check_cookie_is_expire():
+            raise Exception("cookie已过期，请重新获取")
+        return False
+
+    @abstractmethod
+    def check_cookie_is_expire(self):
         pass

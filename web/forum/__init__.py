@@ -7,5 +7,6 @@
 """
 
 from .mt import MT
+from .v2ex import V2EX
 
-FORUM_TASKS = [MT]
+FORUM_TASKS = [MT, V2EX]

@@ -9,25 +9,22 @@ import time
 from typing import Tuple
 
 import config
-from common.base_config import BaseUserConfig
-from common.base import BaseFileStorageTemplateForAccount
+from common.base import BaseFSTemplateForAccount
+from common.base_config import BaseTaskConfig
 from utils import crypt_utils
 
 
-class HLX(BaseFileStorageTemplateForAccount):
-    HLX_DEFAULT_USER_CONFIG = config.DefaultUserConfig.HLXConfig
-    TAG = HLX_DEFAULT_USER_CONFIG.tag
+class HLX(BaseFSTemplateForAccount):
+    HLX_DEFAULT_USER_CONFIG = config.DefaultTaskConfig.HLXConfig
+    TAG = HLX_DEFAULT_USER_CONFIG.task_name
     STATIONARY_CODE = "fa1c28a5b62e79c3e63d9030b6142e4b"
     DEVICE_CODE = "[d]a87e1f0e-32d5-4331-bc12-4a41925f4eb5"
 
-    def __init__(self, userConfig: BaseUserConfig = HLX_DEFAULT_USER_CONFIG):
+    def __init__(self, taskConfig: BaseTaskConfig = HLX_DEFAULT_USER_CONFIG):
         self._key = None
         self.__hash_pwd = None
         self.cate_ids = {}
-        super().__init__(
-            userConfig,
-            "hlx_userinfo"
-        )
+        super().__init__(taskConfig, "hlx_userinfo")
 
     def fetch_primary_data(self, username: str, password: str, *args, **kwargs) -> bool | Tuple[str, any, bool]:
         url = "http://floor.huluxia.com/account/login/ANDROID/4.1.8"

@@ -13,7 +13,6 @@ except:
 
 from utils.base_utils import global_run
 from utils.base_utils import msg_list
-from utils.os_utils import get_env_value
 
 if __name__ == '__main__':
     try:
@@ -22,19 +21,20 @@ if __name__ == '__main__':
         load_dotenv()
     except:
         pass
+    from config import GlobalConfig
     from software import *
     from web import *
 
     tasks = WEB_TASKS + SOFTWARE_TASKS
 
     for task in tasks:
-        if get_env_value("IS_DEBUG_TASKS"):
-            if task.TAG not in get_env_value("DEBUG_TASKS_LIST"):
+        if GlobalConfig.IS_DEBUG_TASKS:
+            if task.TAG not in GlobalConfig.DEBUG_TASKS_LIST:
                 continue
         global_run(task, task.TAG)
 
     from notify import send
 
     if msg_list:
-        send("MoMingLog自动任务通知", "\n".join(msg_list))
+        send("🎉🎉🎉MoMingLog自动任务🎉🎉🎉", "\n".join(msg_list))
         msg_list.clear()

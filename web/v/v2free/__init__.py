@@ -13,20 +13,17 @@ from typing import Tuple
 import requests
 
 import config
-from common.base import BaseFileStorageTemplateForAccount
-from common.base_config import BaseUserConfig
+from common.base import BaseFSTemplateForAccount
+from common.base_config import BaseTaskConfig
 
 
-class V2Free(BaseFileStorageTemplateForAccount):
-    V2FREE_DEFAULT_USER_CONFIG = config.DefaultUserConfig.V2FreeConfig
-    TAG = V2FREE_DEFAULT_USER_CONFIG.tag
+class V2Free(BaseFSTemplateForAccount):
+    V2FREE_DEFAULT_USER_CONFIG = config.DefaultTaskConfig.V2FreeConfig
+    TAG = V2FREE_DEFAULT_USER_CONFIG.task_name
 
-    def __init__(self, userConfig: BaseUserConfig = V2FREE_DEFAULT_USER_CONFIG):
+    def __init__(self, taskConfig: BaseTaskConfig = V2FREE_DEFAULT_USER_CONFIG):
         self.data_sitekey: str = ""
-        super().__init__(
-            userConfig,
-            "v2free_userinfo"
-        )
+        super().__init__(taskConfig, "v2free_userinfo")
 
     def build_base_headers(self) -> dict:
         return {

@@ -16,19 +16,19 @@ import requests
 import ujson
 
 import config
-from common.base import BaseFileStorageTemplateForAccount
-from common.base_config import BaseUserConfig
+from common.base import BaseFSTemplateForAccount
+from common.base_config import BaseTaskConfig
 from utils.crypt_utils import rsa_encrypt, aes_encrypt, aes_decrypt
 from utils.generator_utils import uuid_generator, rates_generator
 from utils.ocr_utils import slide_match
 from web.cloudpan.tyyun.scheme import *
 
 
-class TY(BaseFileStorageTemplateForAccount):
-    TY_DEFAULT_USER_CONFIG = config.DefaultUserConfig.TYYPConfig
-    TAG = TY_DEFAULT_USER_CONFIG.tag
+class TY(BaseFSTemplateForAccount):
+    TY_DEFAULT_USER_CONFIG = config.DefaultTaskConfig.TYYPConfig
+    TAG = TY_DEFAULT_USER_CONFIG.task_name
 
-    def __init__(self, userConfig: BaseUserConfig = TY_DEFAULT_USER_CONFIG):
+    def __init__(self, taskConfig: BaseTaskConfig = TY_DEFAULT_USER_CONFIG):
         # appConf.do 相关响应数据
         self.__app_conf_res_data: AppConfig
         # encryptConf.do 相关响应数据
@@ -36,10 +36,7 @@ class TY(BaseFileStorageTemplateForAccount):
         # 验证码检验通过的数据
         self.__pass_captcha_data: PassCaptchaData = PassCaptchaData()
 
-        super().__init__(
-            userConfig,
-            default_env_key="tyyp_userinfo"
-        )
+        super().__init__(taskConfig, default_env_key="tyyp_userinfo")
 
     def fetch_primary_data(self, username: str, password: str, *args, **kwargs) -> bool | Tuple[str, any, bool]:
         try:
@@ -61,8 +58,8 @@ class TY(BaseFileStorageTemplateForAccount):
             "userName": f"{self.__encrypt_conf_res_data.pre}{self.__rsa_encrypt_for_login(self._username)}",
             "epd": f"{self.__encrypt_conf_res_data.pre}{self.__rsa_encrypt_for_login(self._password)}",
             "captchaType": self.__pass_captcha_data.captchaType,
-            "validateCode": self.__pass_captcha_data.validate,
-            "smsValidateCode": self.__pass_captcha_data.validate,
+            "validateCode": self.__pass_captcha_data.validate_result,
+            "smsValidateCode": self.__pass_captcha_data.validate_result,
             "captchaToken": self.__pass_captcha_data.token,
             "returnUrl": self.__app_conf_res_data.returnUrl,
             "mailSuffix": self.__app_conf_res_data.mailSuffix,
@@ -85,8 +82,11 @@ class TY(BaseFileStorageTemplateForAccount):
             # 发送重定向请求
             self.session.get(toUrl)
             return True
+        elif "图形验证码错误" in msg:
+            # 有可能会再次出现这种情况，我没尝试解决，估计是账号黑了，又或者是ip封了
+            raise Exception("登录失败! 图形验证码错误! 估计是账号黑了，又或者是ip封了.")
         else:
-            raise Exception(" 登录失败" + ujson.dumps(res_json))
+            raise Exception(" 登录失败" + ujson.dumps(res_json, ensure_ascii=False))
 
     def build_base_headers(self) -> dict:
         return {

@@ -8,19 +8,16 @@
 from typing import Tuple
 
 import config
-from common.base import BaseFileStorageTemplateForToken
-from common.base_config import BaseUserConfig
+from common.base import BaseFSTemplateForToken
+from common.base_config import BaseTaskConfig
 
 
-class AL(BaseFileStorageTemplateForToken):
-    AL_DEFAULT_USER_CONFIG = config.DefaultUserConfig.ALYPConfig
-    TAG = AL_DEFAULT_USER_CONFIG.tag
+class AL(BaseFSTemplateForToken):
+    AL_DEFAULT_USER_CONFIG = config.DefaultTaskConfig.ALYPConfig
+    TAG = AL_DEFAULT_USER_CONFIG.task_name
 
-    def __init__(self, userConfig: BaseUserConfig = AL_DEFAULT_USER_CONFIG):
-        super().__init__(
-            userConfig,
-            "alyp_userinfo"
-        )
+    def __init__(self, taskConfig: BaseTaskConfig = AL_DEFAULT_USER_CONFIG):
+        super().__init__(taskConfig, "alyp_userinfo")
 
     def fetch_primary_data(self, nickname: str, token: str, *args, **kwargs) -> bool | Tuple[str, any, bool]:
         """
