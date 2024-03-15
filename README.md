@@ -45,16 +45,16 @@ ql repo https://github.com/MoMingRose/QLAutomateTasks.git "一键" "" "*" "" "py
 - <b>支持自行更改指定任务的分隔符，在 `config.py`中修改即可</b>
 - 也可以根据报错提示添加环境变量
 
-| 任务名称                                                    | 多账号 | 默认环境变量             | 使用方式          | 功能                           |
-|---------------------------------------------------------|-----|--------------------|---------------|------------------------------|
-| 葫芦侠三楼                                                   | ✅   | `hlx_userinfo`     | 账号密码          | 全板块签到，领取经验                   |
-| 芥末空间                                                    | ✅   | `jmkj_userinfo`    | 账号密码          | 1. 全板块签到，获取经验<br>2.主页签到，领取芥末 |
-| [阿里云盘](https://www.alipan.com/)                         | ✅   | `alyp_userinfo`    | refresh_token | 每日签到，领取免费会员和空间               |
-| [天翼云盘](https://cloud.189.cn/)                           | ✅   | `tyyp_userinfo`    | 账号密码          | 每日签到，领取空间                    |
-| [MT论坛](https://bbs.binmt.cc/?fromuid=123380)            | ✅   | `mt_userinfo`      | 账号密码          | 每日签到，领取金币                    |
-| [MIUI历史版本(刷机包)](https://miuiver.com/)                   | ✅   | `miuiver_userinfo` | 账号密码          | 每日签到，领取固定1积分                 |
-| [V2Free](https://w1.v2free.top/auth/register?code=8EZr) | ✅   | `v2free_userinfo`  | 账号密码          | 每日签到，领流量                     |
-| [V2EX](https://www.v2ex.com/)                           | ✅   | `v2ex_userinfo`    | cookie        | 每日签到领金币                      |
+| 任务名称                                  | 多账号 | 默认环境变量             | 使用方式          | 功能                           |
+|---------------------------------------|-----|--------------------|---------------|------------------------------|
+| 葫芦侠三楼                                 | ✅   | `hlx_userinfo`     | 账号密码          | 全板块签到，领取经验                   |
+| 芥末空间                                  | ✅   | `jmkj_userinfo`    | 账号密码          | 1. 全板块签到，获取经验<br>2.主页签到，领取芥末 |
+| [阿里云盘](https://www.alipan.com/)       | ✅   | `alyp_userinfo`    | refresh_token | 每日签到，领取免费会员和空间               |
+| [天翼云盘](https://cloud.189.cn/)         | ✅   | `tyyp_userinfo`    | 账号密码          | 每日签到，领取空间                    |
+| [MT论坛](https://bbs.binmt.cc/)         | ✅   | `mt_userinfo`      | 账号密码          | 每日签到，领取金币                    |
+| [MIUI历史版本(刷机包)](https://miuiver.com/) | ✅   | `miuiver_userinfo` | 账号密码          | 每日签到，领取固定1积分                 |
+| [V2Free](https://v2free.net/)         | ✅   | `v2free_userinfo`  | 账号密码          | 每日签到，领流量                     |
+| [V2EX](https://www.v2ex.com/)         | ✅   | `v2ex_userinfo`    | cookie        | 每日签到领金币                      |
 
 ### 阿里云盘 refresh_token 获取方式
 
