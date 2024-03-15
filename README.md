@@ -54,7 +54,7 @@ ql repo https://github.com/MoMingRose/QLAutomateTasks.git "一键" "" "*" "" "py
 | [MT论坛](https://bbs.binmt.cc/)         | ✅   | `mt_userinfo`      | 账号密码          | 每日签到，领取金币                    |
 | [MIUI历史版本(刷机包)](https://miuiver.com/) | ✅   | `miuiver_userinfo` | 账号密码          | 每日签到，领取固定1积分                 |
 | [V2Free](https://v2free.net/)         | ✅   | `v2free_userinfo`  | 账号密码          | 每日签到，领流量                     |
-| [V2EX](https://www.v2ex.com/)         | ✅   | `v2ex_userinfo`    | cookie        | 每日签到领金币                      |
+| [V2EX](https://www.v2ex.com/)         | ✅   | `v2ex_userinfo`    | cookie        | 每日签到领铜币                      |
 
 ### 阿里云盘 refresh_token 获取方式
 
