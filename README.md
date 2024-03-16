@@ -1,5 +1,12 @@
 #### 附赠一个花了几天自写的自动添加、更新、追加JD_COOKIE的软件 [去下载](https://github.com/MoMingRose/QLAutomateTasks/releases)
 
+> [!TIP]
+> 下方是作者使用的环境
+> 
+> 青龙面板版本：`2.17.2`（whyour/qinglong:debian）
+> 
+> 开发环境Python版本: `3.10`
+
 ### 青龙面板拉库命令：
 
 ```shell

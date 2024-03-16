@@ -8,6 +8,8 @@
 import re
 from typing import Tuple
 
+import requests
+
 import config
 from common.base import BaseFSTemplateForAccount
 from common.base_config import BaseTaskConfig
@@ -69,7 +71,8 @@ class MT(BaseFSTemplateForAccount):
         """
         # 积分商城页面
         url = "https://bbs.binmt.cc/keke_integralmall-keke_integralmall.html"
-        response = self.session.get(url=url)
+        requests.packages.urllib3.disable_warnings()
+        response = self.session.get(url=url, verify=False)
         # 判断是否存在"买家中心"，存在则表示cookie未过期
         if "买家中心" in response.text:
             return False

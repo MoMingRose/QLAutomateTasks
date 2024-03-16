@@ -191,8 +191,6 @@ class BaseTemplate(ABC):
         """
         签到任务运行的方法
 
-        :param username: 账号
-        :param password: 密码
         :param args: 扩展参数
         :param kwargs: 扩展参数
         :return: 运行成功返回True，否则返回False

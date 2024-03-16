@@ -49,10 +49,9 @@ class V2EX(BaseFSTemplateForCookie):
         # 测试时发现“没有签到，却显示已签到，且主页没有签到入口”的情况
         # 故尝试先请求一下主页
         homepage = self.__request_homepage()
-
         # 判断cookie是否过期
         if not all([r in homepage for r in ["记事本", "时间轴", "设置"]]):
-            # 只要其中一个不存在，则表示过期
+            # 只要其中一个不存在，则表示过期（目的是预防帖子中出现重试字眼）
             return True
 
         # 提取当前账户余额
@@ -108,6 +107,7 @@ class V2EX(BaseFSTemplateForCookie):
         if r := re.search(r"<span.*?奖励.*?(\d+).*?<", html, re.S):
             return r.group(1)
 
-    def __fetch_balance(self, html: str):
+    @staticmethod
+    def __fetch_balance(html: str):
         if r := re.search(r"<a.*?balance_area.*?>(\d+).*?<", html, re.S):
             return r.group(1)
