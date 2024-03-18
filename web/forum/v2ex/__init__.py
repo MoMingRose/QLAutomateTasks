@@ -84,6 +84,7 @@ class V2EX(BaseFSTemplateForCookie):
     def last_task_run(self, *args, **kwargs):
         if self.current_balance is not None and self.new_current_balance is not None:
             self.push_msg(f"今日签到奖励：{int(self.new_current_balance) - int(self.current_balance)}铜币")
+            self.current_balance = self.new_current_balance
         elif self.new_current_balance is None:
             balance = self.__request_balance()
             self.push_msg(f"今日签到奖励：{balance}铜币")
