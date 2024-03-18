@@ -48,6 +48,23 @@ def fetch_account_list(env_key: str = None, up_split: str = "&", ups_split: str 
     :return: 账号密码列表
     """
     account_list = []
+
+    # 判断env_key中是否存在 _
+    if "_" in env_key:
+        # 如果存在，则提取出分隔符key前缀
+        split_key_prefix = env_key.split("_")[0]
+        # 使用分隔符key前缀拼接
+        up_split_key = f"{split_key_prefix}_up"
+        ups_split_key = f"{split_key_prefix}_ups"
+    else:
+        # 否则使用自定义env_key拼接
+        up_split_key = f"{env_key}_up"
+        ups_split_key = f"{env_key}_ups"
+
+    # 从环境变量中获取分隔符，如果环境变量不存在，则使用传入的分隔符
+    up_split = os.getenv(up_split_key, up_split)
+    ups_split = os.getenv(ups_split_key, ups_split)
+
     # 测试环境变量值优先原则
     userinfo = os.getenv(env_key)
     # 判断环境变量中是否存在账号密码
