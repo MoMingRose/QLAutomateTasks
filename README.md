@@ -27,7 +27,7 @@
 ### 青龙面板拉库命令：
 
 ```shell
-ql repo https://github.com/MoMingRose/QLAutomateTasks.git "一键" "" "*" "" "py|txt|env"
+ql repo https://github.com/MoMingRose/QLAutomateTasks.git "一键" "" "*" "" "py|txt|example"
 ```
 
 ### 所需环境依赖如下:
