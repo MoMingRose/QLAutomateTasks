@@ -91,6 +91,7 @@ class MIUIVER(BaseFSTemplateForAccount):
                 self.push_msg("今日已签到!")
             else:
                 return False
+            self.inp = 1
             return True
         except Exception as e:
             self.push_msg(f"签到任务异常：{str(e)}", is_push=False)
