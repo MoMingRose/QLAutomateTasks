@@ -7,15 +7,32 @@
 >
 > 开发环境Python版本: `3.10`
 
+### 数据储存策略
+
+> 主要用来`加载`和`存储`自动任务执行`所需`和`生成`的重要数据（如：账号密码登录后生成的cookie、各类自动任务完成的时间等）
+> 
+> > 后面有心思的时候再添加数据库相关储存策略（主要是最近刚好数据备份的时候接触到了webdav）
+> 
+> 支持多策略储存
+> 
+> `config.py`中可以针对单个任务设置储存策略（优先级更高，但不推荐，因为后续更新会覆盖）
+> 
+> **更多内容参考[.env.example](.env.example)**
+
+#### 目前支持的策略如下：
+
+- local
+- webdav（正好本地搭建了AList，故写了这个小功能）
+
 ### 青龙面板拉库命令：
 
 ```shell
-ql repo https://github.com/MoMingRose/QLAutomateTasks.git "一键" "" "*" "" "py|txt|example"
+ql repo https://github.com/MoMingRose/QLAutomateTasks.git "一键" "" "*" "" "py|txt|env"
 ```
 
 ### 所需环境依赖如下:
 
-已添加自动安装依赖脚本，运行“`一键任务执行.py`”脚本前，请先执行`一键依赖安装.py`脚本，执行完成后建议禁用此定时任务
+已添加自动安装依赖脚本，运行“`一键任务执行.py`”脚本前，请先执行`一键依赖安装.py`脚本
 > [!TIP]
 > 如果是Docker拉取的青龙容器，建议拉取debian版本的，因为alpine不能安装ddddocr库（亲测）
 > > 1. [ddddocr库](https://github.com/sml2h3/ddddocr)，我主要用来进行天翼云盘的滑块验证码识别，如果不介意天翼云盘用不了，可以选择不安装ddddocr依赖
@@ -38,13 +55,13 @@ ql repo https://github.com/MoMingRose/QLAutomateTasks.git "一键" "" "*" "" "py
 | 🟢 | [MT论坛](https://bbs.binmt.cc/)         | 2024.03.18 |                                                                                                                                                    |
 | 🟢 | [MIUI历史版本(刷机包)](https://miuiver.com/) | 2024.03.18 |                                                                                                                                                    |
 | 🔴 | [V2Free](https://v2free.net/)         | 2024.03.18 | <font style="color:red">已更换验证方式，目前暂不可用</font><br/><s>需要进行google的人机验证<br>愿意的话可以前往[【yescaptcha邀请链接】](https://yescaptcha.com/i/jFtvBe)获取ClientKey</s> |
-| 🟢 | [V2EX](https://www.v2ex.com/)         | 2024.03.18 | 经过3天运行，签到任务正常运行<s><br/>今天测试时发现“没有签到，却显示已签到，且主页没有签到入口”的情况。貌似有检测活跃度，从而决定是否显示签到入口的逻辑，如果有，后续可能会关闭此任务的运行</s>                                                 |
+| 🟢 | [V2EX](https://www.v2ex.com/)         | 2024.03.18 | 经过3天运行，签到任务正常运行<s><br/>今天测试时发现“没有签到，却显示已签到，且主页没有签到入口”的情况。貌似有检测活跃度，从而决定是否显示签到入口的逻辑，如果有，后续可能会关闭此任务的运行</s>                                            |
 
 ### 各个签到任务详情
 
 > [!TIP]
 > <b>`支持自行更改`指定任务的`分隔符`。[自定义分隔符教程](docs/cust_split.md#1-自定义单多账号分隔符)
-> 
+>
 > 也可以根据报错提示添加环境变量
 
 | 任务名称                                  | 多账号 | 默认环境变量             | 使用方式                         | 多账号分隔符   | 功能                           |
