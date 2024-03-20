@@ -45,8 +45,8 @@ class HLX(BaseFSTemplateForAccount):
             res_status = res_json['status']
             if res_status == 1:
                 _key = res_json['_key']  # 获取登录后的_key值，这个可以用来进行后续的操作
-                self.current_user_config_data["_key"] = _key
-                self.flash_current_user_config_data()
+                self.user_data["_key"] = _key
+                self.storage_data()
                 return True
         except Exception as e:
             self.push_msg(e)
@@ -63,7 +63,7 @@ class HLX(BaseFSTemplateForAccount):
 
     def check_expire_task_run(self) -> bool:
         url = "http://floor.huluxia.com/account/security/info/ANDROID/4.2.2"
-        params = self.__build_params(self.current_user_config_data.get("_key"))
+        params = self.__build_params(self.user_data.get("_key"))
         response = self.session.get(url, params=params)
         try:
             res_json = response.json()
@@ -84,7 +84,7 @@ class HLX(BaseFSTemplateForAccount):
 
         for cate_id, cate_title in self.cate_ids.items():
 
-            params = self.__build_params(self.current_user_config_data.get("_key"))
+            params = self.__build_params(self.user_data.get("_key"))
             time_str = int(time.time() * 1000)
             params.update({
                 "cat_id": cate_id,

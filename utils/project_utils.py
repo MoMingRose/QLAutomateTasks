@@ -71,9 +71,9 @@ def check_and_install_dependencies(
     if missing_packages:
         print("当前环境缺少以下依赖：", missing_packages)
         try:
-            # 使用pip安装缺失的包
+            # 使用pip3安装缺失的包
             for package in missing_packages:
-                subprocess.run(["pip", "install", package])
+                subprocess.run(["pip3", "install", package])
             print("依赖项安装成功！")
         except Exception as e:
             print(f"安装依赖项时出错：{e}")

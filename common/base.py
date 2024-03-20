@@ -74,7 +74,7 @@ class BaseTemplate(ABC):
             self.session.headers.update(self.base_headers)
 
             # 初始化用户账号配置数据
-            self.current_user_config_data = self.load_current_user_config_data(username, password, *args, **kwargs)
+            self.user_data = self.load_config_data(username, password, *args, **kwargs)
             # 初始化推送用户名, 如果环境变量IS_SEND_REAL_NAME为True，则显示实际用户名，否则显示其他
             self.print_username = f"【{username}】" if config.GlobalConfig.IS_PRINT_REAL_NAME else f"【账号{t}】"
             self.push_username = f"【{username}】" if config.GlobalConfig.IS_SEND_REAL_NAME else f"【账号{t}】"
@@ -113,7 +113,7 @@ class BaseTemplate(ABC):
         pass
 
     @abstractmethod
-    def load_current_user_config_data(self, username: str, password: str, *args, **kwargs) -> dict:
+    def load_config_data(self, username: str, password: str, *args, **kwargs) -> dict:
         """
         加载当前用户的配置数据
         :param username: 用户名
@@ -125,7 +125,7 @@ class BaseTemplate(ABC):
         pass
 
     @abstractmethod
-    def flash_current_user_config_data(self):
+    def storage_data(self):
         """
         将当前用户的配置数据进行存储
         :return:
@@ -142,8 +142,8 @@ class BaseTemplate(ABC):
         :param task_name 任务名称
         :return:
         """
-        self.current_user_config_data[task_name] = base_utils.get_today()
-        self.flash_current_user_config_data()
+        self.user_data[task_name] = base_utils.get_today()
+        self.storage_data()
 
     @abstractmethod
     def build_base_headers(self) -> dict:
@@ -311,11 +311,11 @@ class BaseTemplate(ABC):
                 self.session.cookies.update(primary_value)
             elif is_write_headers:
                 self.session.headers[primary_key] = primary_value
-            self.current_user_config_data[primary_key] = primary_value
-            self.flash_current_user_config_data()
+            self.user_data[primary_key] = primary_value
+            self.storage_data()
 
         # 从已加载的配置中获取主要数据
-        local_data = self.__pack_get_primary_data(self.current_user_config_data)
+        local_data = self.__pack_get_primary_data(self.user_data)
 
         if local_data and isinstance(local_data, tuple):
             temp(local_data)
@@ -366,7 +366,7 @@ class BaseTemplate(ABC):
         :return: True 可以执行 False 无需再次执行
         """
         # 判断是否存在 指定任务 数据
-        if runtime := self.current_user_config_data.get(task_name):
+        if runtime := self.user_data.get(task_name):
             # 如果执行任务时间不是今天，返回True，否则返回False
             return not runtime == base_utils.get_today()
 
@@ -397,8 +397,8 @@ class BaseTemplate(ABC):
         """
         cookie = self.session.cookies.get_dict()
         if cookie:
-            self.current_user_config_data["cookie"] = cookie
-            self.flash_current_user_config_data()
+            self.user_data["cookie"] = cookie
+            self.storage_data()
 
     def get_push_msg(self) -> str:
         """
@@ -459,30 +459,96 @@ class BaseFSTemplate(BaseQLTemplate, ABC):
     """仅适用于文件存储的模板"""
 
     def __init__(self, taskConfig: BaseTaskConfig, default_env_key: str):
+        # 初始化目录名，默认为任务名，不符合文件命名规则的字符统一替换为 "_"
         self.root_dir_name = re.sub(r'[\\/:*?"<>|]', "_", taskConfig.task_name)
-        self.root_dir_path = self.get_root_dir()
-        self.hash_value = ""
-        self.__current_user_config_data_path = ""
+        # 获取绝对根目录路径
+        self._abs_root_dir = self.get_abs_root_dir()
+        # md5加密（后面文件名要用到）
+        self._hash_value = ""
+        # 文件名（包含文件后缀）
+        self._file_name = ""
+        # 本地存储文件的绝对路径
+        self._abs_file_path = ""
+        # webdav存储文件的相对路径
+        self._rel_file_path = ""
+        # 加载策略
+        self._load_strategy = taskConfig.load_strategy
+        # 存储策略
+        self._save_strategy = taskConfig.save_strategy
+        self._webdav = config.GlobalConfig.get_webdav_client()
         super().__init__(taskConfig, default_env_key)
 
-    def load_current_user_config_data(self, username: str, password: str, *args, **kwargs) -> dict:
-        self.hash_value = md5(username + self.task_name)
-        self.__current_user_config_data_path = os.path.join(self.root_dir_path,
-                                                            f"{self.hash_value}_{self.task_name}.json")
-        if os.path.exists(self.__current_user_config_data_path):
-            try:
-                with open(self.__current_user_config_data_path, "r", encoding="utf-8") as fp:
-                    return json.load(fp)
-            except:
-                return {}
-        else:
-            return {}
+    def load_config_data(self, username: str, password: str, *args, **kwargs) -> dict:
+        self._hash_value = md5(username + self.task_name)
+        # 初始化文件名
+        self._file_name = f"{self._hash_value}_{self.task_name}.json"
+        self._abs_file_path = os.path.join(self._abs_root_dir, self._file_name)
 
-    def flash_current_user_config_data(self):
-        with open(self.__current_user_config_data_path, "w") as fp:
-            json.dump(self.current_user_config_data, fp)
+        self._rel_file_path = f"{self.task_name}/{self._file_name}"
 
-    def get_root_dir(self) -> str:
+        if self._load_strategy == 1:
+            # 通过本地文件方式加载用户配置数据
+            return self.local_load()
+        elif self._load_strategy == 2:
+            # 通过webdav文件方式加载用户配置数据
+            return self.webdav_load()
+
+    def storage_data(self):
+        # 判断是否使用本地存储方式
+        if 1 in self._save_strategy:
+            self.local_save()
+        # 判断是否使用webdav存储方式
+        if 2 in self._save_strategy:
+            self.webdav_save()
+
+    def local_save(self):
+        """
+        本地存储方式
+        :return:
+        """
+        with open(self._abs_file_path, "w") as fp:
+            json.dump(self.user_data, fp)
+
+    def webdav_save(self):
+        """
+        webdav存储方式
+        :return:
+        """
+        self._webdav.write(self._rel_file_path, self.user_data)
+
+    def local_load(self) -> dict:
+        """
+        从本地文件加载
+        :return:
+        """
+        ret_data = {}
+        # 判断文件是否存在
+        if os.path.exists(self._abs_file_path):
+            # 存在则读取
+            with open(self._abs_file_path, "r", encoding="utf-8") as fp:
+                try:
+                    ret_data = json.load(fp)
+                finally:
+                    pass
+        return ret_data
+
+    def webdav_load(self) -> dict:
+        """
+        从webdav加载
+        :return:
+        """
+        ret_data = {}
+        # 判断文件是否存在
+        if self._webdav.exists(self._rel_file_path):
+            text = self._webdav.read(self._rel_file_path)
+            if text is not None:
+                try:
+                    ret_data = json.loads(text)
+                finally:
+                    pass
+        return ret_data
+
+    def get_abs_root_dir(self) -> str:
         """
         获取文件存储根目录
         :return:

@@ -29,6 +29,7 @@ def global_run(obj, tag: str, arg=None):
         else:
             msg_list.append(msg)
     except Exception as e:
+        raise e
         print(f"{tag}任务出现异常：{e}")
         msg_list.append(f"‼️‼️{tag}任务出现异常：{e}")
 

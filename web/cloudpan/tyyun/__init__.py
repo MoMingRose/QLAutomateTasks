@@ -386,11 +386,11 @@ class TY(BaseFSTemplateForAccount):
 
     @property
     def captcha_target_img(self):
-        return os.path.join(self.root_dir_path, f"{self.hash_value}_target.png")
+        return os.path.join(self._abs_root_dir, f"{self._hash_value}_target.png")
 
     @property
     def captcha_background_img(self):
-        return os.path.join(self.root_dir_path, f"{self.hash_value}_background.png")
+        return os.path.join(self._abs_root_dir, f"{self._hash_value}_background.png")
 
     def __handle_captcha_image(self, captcha_data: CaptchaData):
         """

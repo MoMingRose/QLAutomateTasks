@@ -114,9 +114,9 @@ class AL(BaseFSTemplateForToken):
             access_token = response.json()["access_token"]
             if access_token:
                 # 保存access_token
-                self.current_user_config_data["Authorization"] = f"Bearer {access_token}"
+                self.user_data["Authorization"] = f"Bearer {access_token}"
                 self.session.headers.update({"Authorization": f"Bearer {access_token}"})
-                self.flash_current_user_config_data()
+                self.storage_data()
                 return access_token
         except Exception as e:
             self.push_msg(response.text, is_push=False)

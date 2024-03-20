@@ -5,3 +5,5 @@ python-dotenv==1.0.1
 Requests==2.31.0
 rsa==4.9
 ujson==5.9.0
+webdav4==0.9.8
+fsspec==2024.3.1
