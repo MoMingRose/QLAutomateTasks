@@ -19,6 +19,7 @@ class MIUIVER(BaseFSTemplateForAccount):
 
     def __init__(self, taskConfig: BaseTaskConfig = DEFAULT_TASK_CONFIG):
         self.html = None
+        self.inp = 0  # 增加的积分数
         super().__init__(taskConfig, "miuiver_userinfo")
 
     def build_base_headers(self) -> dict:
@@ -89,23 +90,26 @@ class MIUIVER(BaseFSTemplateForAccount):
                 self.push_msg("今日已签到!")
             else:
                 return False
+            self.inp = 1
             return True
         except Exception as e:
-            self.push_msg(response.text)
+            self.push_msg(f"签到任务异常：{str(e)}", is_push=False)
             return False
 
     def other_task_run(self, *args, **kwargs) -> bool:
         pass
 
     def last_task_run(self, *args, **kwargs):
+        # 当cookie过期，并且登录成功时，才会触发请求操作
         html = self.html if self.html else self.__request_user_profile()
         try:
             # 提取当前积分
             current_point = re.search(r'当前积分.*?(\d+).*?', html, re.S).group(1)
             # 提取已用积分
             used_point = re.search(r'已用积分.*?(\d+).*?', html, re.S).group(1)
-            self.push_msg(f"当前积分: {current_point}, 已用积分: {used_point}")
-        except:
+
+            self.push_msg(f"当前积分: {int(current_point) + self.inp}, 已用积分: {used_point}")
+        except AttributeError | IndexError:
             self.push_msg("积分详情提取失败，请更新正则!")
 
     def __request_user_profile(self) -> str:
@@ -114,5 +118,9 @@ class MIUIVER(BaseFSTemplateForAccount):
         :return:
         """
         url = "https://miuiver.com/user-profile/"
-        response = self.session.get(url, timeout=5)
-        return response.text
+        try:
+            response = self.session.get(url, timeout=5)
+            return response.text
+        except Exception as e:
+            self.push_msg(f"获取用户信息异常：{str(e)}", is_push=False)
+            return ""
