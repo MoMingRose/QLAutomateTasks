@@ -20,6 +20,7 @@ class MT(BaseFSTemplateForAccount):
     TAG = MT_DEFAULT_USER_CONFIG.task_name
 
     def __init__(self, taskConfig: BaseTaskConfig = MT_DEFAULT_USER_CONFIG):
+        self.current_balance = None
         super().__init__(taskConfig, "mt_userinfo")
 
     def fetch_primary_data(self, username: str, password: str, *args, **kwargs) -> bool | Tuple[str, any, bool]:
@@ -69,12 +70,10 @@ class MT(BaseFSTemplateForAccount):
         检查cookie是否过期
         :return: cookie过期返回True，cookie未过期返回False
         """
-        # 积分商城页面
-        url = "https://bbs.binmt.cc/keke_integralmall-keke_integralmall.html"
-        requests.packages.urllib3.disable_warnings()
-        response = self.session.get(url=url, verify=False)
+        html = self.__request_mall_page()
         # 判断是否存在"买家中心"，存在则表示cookie未过期
-        if "买家中心" in response.text:
+        if "买家中心" in html:
+            self.current_balance = self.__fetch_balance(html)
             return False
         else:
             return True
@@ -89,21 +88,27 @@ class MT(BaseFSTemplateForAccount):
             "ajaxtarget": "midaben_sign"
         }
         response = self.session.get(url=url, params=params)
-        if "今日已签" in response.text:
+        html = response.text
+        if "今日已签" in html:
             self.push_msg(f"今日已签到")
             return True
-        elif "签到成功" in response.text:
-            # 连续签到
-            continue_sign = re.search(r'连续(\d+)天', response.text).group(1)
-            # 总签到
-            total_sign = re.search(r'累计签到.?(\d+).?天', response.text).group(1)
-            # 签到奖励
-            sign_reward = re.search(r'奖励.?(\d+).?金币', response.text).group(1)
-            self.push_msg(
-                f"签到成功，奖励{sign_reward}金币，连续签到{continue_sign}天，总签到{total_sign}天")
-            return True
+        elif "签到成功" in html:
+            try:
+                # 连续签到
+                continue_sign = re.search(r'连续(\d+)天', html).group(1)
+                # 总签到
+                total_sign = re.search(r'累计签到.?(\d+).?天', html).group(1)
+                # 签到奖励
+                sign_reward = re.search(r'奖励.?(\d+).?金币', html).group(1)
+                # 当前余额
+                self.current_balance += int(sign_reward)
+                self.push_msg(
+                    f"签到成功! \n> 获取金币: {sign_reward}\n> 连续签到{continue_sign}天\n> 总签到{total_sign}天")
+                return True
+            except AttributeError:
+                raise AttributeError(f"签到成功! 但正则表达式失效，请更新!")
         else:
-            self.push_msg(f"可能签到失败，原因：{response.text}")
+            self.push_msg(f"可能签到失败，原因：{html}")
             return False
 
     def other_task_run(self, *args, **kwargs):
@@ -114,7 +119,16 @@ class MT(BaseFSTemplateForAccount):
         pass
 
     def last_task_run(self, *args, **kwargs):
-        pass
+        if self.current_balance is None:
+            self.current_balance = self.__fetch_balance(self.__request_mall_page())
+        self.push_msg(f"当前余额: {self.current_balance}金币")
+
+    @staticmethod
+    def __fetch_balance(mall_html: str):
+        if r := re.search(r'"reds">(\d+)\s?金币', mall_html):
+            return int(r.group(1))
+        else:
+            return None
 
     def __fetch_hash(self, html_text: str, regex: str = r'name="formhash" value="(.*?)"'):
         """
@@ -133,9 +147,15 @@ class MT(BaseFSTemplateForAccount):
         提取签到所需的formhash
         :return:
         """
-        url = "https://bbs.binmt.cc/k_misign-sign.html"
-        response = self.session.get(url=url)
-        return self.__fetch_hash(response.text)
+        html = self.__request_sign_page()
+        retry_times = 0
+        while retry_times < 3:
+            try:
+                return self.__fetch_hash(html)
+            except AttributeError:
+                retry_times += 1
+                html = self.__request_sign_page()
+        raise AttributeError("没有从源代码中找到formhash值")
 
     def __fetch_login_hash_value(self):
         """
@@ -156,3 +176,15 @@ class MT(BaseFSTemplateForAccount):
         formhash = self.__fetch_hash(response.text)
         loginhash = self.__fetch_hash(response.text, regex=r'loginhash=(.*?)">')
         return formhash, loginhash
+
+    def __request_sign_page(self):
+        url = "https://bbs.binmt.cc/k_misign-sign.html"
+        response = self.session.get(url=url)
+        return response.text
+
+    def __request_mall_page(self):
+        # 积分商城页面
+        url = "https://bbs.binmt.cc/keke_integralmall-keke_integralmall.html"
+        requests.packages.urllib3.disable_warnings()
+        response = self.session.get(url=url, verify=False)
+        return response.text
