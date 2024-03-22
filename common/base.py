@@ -5,12 +5,13 @@
 【创建时间】2023-12-05
 【功能描述】模板
 """
-import os
-import re
 from abc import ABC, abstractmethod
 from typing import List, Tuple
 
 import requests
+
+from common.storage.local import LocalFSStrategy
+from common.storage.webdav import WebdavFSStrategy
 
 try:
     import ujson as json
@@ -459,108 +460,58 @@ class BaseFSTemplate(BaseQLTemplate, ABC):
     """仅适用于文件存储的模板"""
 
     def __init__(self, taskConfig: BaseTaskConfig, default_env_key: str):
-        # 初始化目录名，默认为任务名，不符合文件命名规则的字符统一替换为 "_"
-        self.root_dir_name = re.sub(r'[\\/:*?"<>|]', "_", taskConfig.task_name)
-        # 获取绝对根目录路径
-        self._abs_root_dir = self.get_abs_root_dir()
         # md5加密（后面文件名要用到）
         self._hash_value = ""
         # 文件名（包含文件后缀）
         self._file_name = ""
-        # 本地存储文件的绝对路径
-        self._abs_file_path = ""
-        # webdav存储文件的相对路径
-        self._rel_file_path = ""
         # 加载策略
         self._load_strategy = taskConfig.load_strategy
         # 存储策略
         self._save_strategy = taskConfig.save_strategy
-        self._webdav = config.GlobalConfig.get_webdav_client()
+
+        self.load_storage = None
+        self.save_storage = {}
         super().__init__(taskConfig, default_env_key)
 
     def load_config_data(self, username: str, password: str, *args, **kwargs) -> dict:
         self._hash_value = md5(username + self.task_name)
-        # 初始化文件名
-        self._file_name = f"{self._hash_value}_{self.task_name}.json"
-        self._abs_file_path = os.path.join(self._abs_root_dir, self._file_name)
 
-        self._rel_file_path = f"{self.task_name}/{self._file_name}"
+        if 1 in self._save_strategy:
+            self.save_storage["local"] = {
+                "storage": LocalFSStrategy(),
+                "init": False
+            }
+        if 2 in self._save_strategy:
+            self.save_storage["webdav"] = {
+                "storage": WebdavFSStrategy(),
+                "init": False
+            }
 
+        for strategy in self.save_storage.values():
+            strategy["storage"].init_config(self._hash_value, self.task_name)
+            strategy["init"] = True
+
+        is_init = False
         if self._load_strategy == 1:
             # 通过本地文件方式加载用户配置数据
-            return self.local_load()
+            local = self.save_storage.get("local")
+            self.load_storage = LocalFSStrategy() if local is None else local["storage"]
+            is_init = local.get("init") if local is not None else False
         elif self._load_strategy == 2:
             # 通过webdav文件方式加载用户配置数据
-            return self.webdav_load()
+            webdav = self.save_storage.get("webdav")
+            self.load_storage = WebdavFSStrategy() if webdav is None else webdav["storage"]
+            is_init = webdav.get("init") if webdav is not None else False
+
+        # 判断是否初始化
+        if not is_init:
+            self.load_storage.init_config(self._hash_value, self.task_name)
+        # 开始从目标文件加载数据
+        return self.load_storage.load()
 
     def storage_data(self):
-        # 判断是否使用本地存储方式
-        if 1 in self._save_strategy:
-            self.local_save()
-        # 判断是否使用webdav存储方式
-        if 2 in self._save_strategy:
-            self.webdav_save()
-
-    def local_save(self):
-        """
-        本地存储方式
-        :return:
-        """
-        with open(self._abs_file_path, "w") as fp:
-            json.dump(self.user_data, fp)
-
-    def webdav_save(self):
-        """
-        webdav存储方式
-        :return:
-        """
-        self._webdav.write(self._rel_file_path, self.user_data)
-
-    def local_load(self) -> dict:
-        """
-        从本地文件加载
-        :return:
-        """
-        ret_data = {}
-        # 判断文件是否存在
-        if os.path.exists(self._abs_file_path):
-            # 存在则读取
-            with open(self._abs_file_path, "r", encoding="utf-8") as fp:
-                try:
-                    ret_data = json.load(fp)
-                finally:
-                    pass
-        return ret_data
-
-    def webdav_load(self) -> dict:
-        """
-        从webdav加载
-        :return:
-        """
-        ret_data = {}
-        # 判断文件是否存在
-        if self._webdav.exists(self._rel_file_path):
-            text = self._webdav.read(self._rel_file_path)
-            if text is not None:
-                try:
-                    ret_data = json.loads(text)
-                finally:
-                    pass
-        return ret_data
-
-    def get_abs_root_dir(self) -> str:
-        """
-        获取文件存储根目录
-        :return:
-        """
-        # 不符合文件命名规则的字符统一替换为_
-        root_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "files", self.root_dir_name)
-
-        # 确保目录存在
-        if not os.path.exists(root_dir):
-            os.makedirs(root_dir)
-
-        return root_dir
+        for strategy in self.save_storage.values():
+            strategy['storage'].save(self.user_data)
 
 
 class BaseFSTemplateForToken(BaseFSTemplate, ABC):

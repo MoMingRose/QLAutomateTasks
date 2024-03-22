@@ -7,8 +7,7 @@
 """
 import os
 
-from common.base_config import BaseTaskConfig, WebDavConfig
-from common.storage.webdav import WebDAVClient
+from common.base_config import BaseTaskConfig
 from utils.os_utils import get_env_value
 
 
@@ -21,11 +20,11 @@ class GlobalConfig:
     IS_DEBUG_TASKS: bool = get_env_value("IS_DEBUG_TASKS", False)
     # 要调试的任务列表，与上方调试开关关联
     DEBUG_TASKS_LIST: list = get_env_value("DEBUG_TASKS_LIST", [])
-    # 是否加密存储
+    # 是否加密存储，默认开启
     IS_ENCRYPT_SAVE: bool = get_env_value("IS_ENCRYPT_SAVE", True)
     # AES加密密钥
     AES_KEY: str = get_env_value("STORAGE_AES_KEY", "L*FN2m&b>CQe+=G;tVrp.S")
-    # webdav开关
+    # webdav开关，默认关闭
     WEBDAV_ENABLE: bool = get_env_value("WEBDAV_ENABLE", False)
 
     # 项目目录
@@ -36,28 +35,6 @@ class GlobalConfig:
         "python-dotenv": "dotenv",
         "pycryptodome": "Crypto",
     }
-
-    _cached_values = {}
-
-    @classmethod
-    def _get_cached_value(cls, name, default=None):
-        if name in cls._cached_values:
-            return cls._cached_values[name]
-        value = get_env_value(name, default)
-        cls._cached_values[name] = value
-        return value
-
-    @classmethod
-    def get_webdav_client(cls, is_new=False) -> WebDAVClient:
-        """
-        获取webdav客户端
-        :param is_new: 是否重新获取实例
-        :return:
-        """
-        if cls.WEBDAV_ENABLE:
-            if "WEBDAV_CLIENT" not in cls._cached_values or is_new:
-                cls._cached_values["WEBDAV_CLIENT"] = WebDAVClient(WebDavConfig())
-            return cls._cached_values["WEBDAV_CLIENT"]
 
 
 class DefaultTaskConfig:
@@ -85,6 +62,15 @@ class DefaultTaskConfig:
         # load_strategy=1,
         # 设置存储策略
         # save_strategy=[1]
+    )
+
+    XKProxyConfig = BaseTaskConfig(
+        task_name="星空代理",
+        task_desc='''
+        签到领星币，星币可以兑换代理IP（爬虫练习时可用）
+        
+        默认环境变量为 xkdl_userinfo
+        '''
     )
 
     V2EXConfig = BaseTaskConfig(

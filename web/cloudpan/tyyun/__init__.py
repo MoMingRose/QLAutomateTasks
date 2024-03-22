@@ -183,7 +183,7 @@ class TY(BaseFSTemplateForAccount):
         if userinfo is not None and userinfo["res_message"] == "成功":
             userinfo = UserInfoData.model_validate(userinfo)
             self.push_msg(
-                f"用户空间容量：\n可用{round(userinfo.available / 1073741824, 2)} GB\n总共{round(userinfo.capacity / 1073741824, 2)} GB")
+                f"统计情况如下：\n> 可用容量{round(userinfo.available / 1073741824, 2)} GB\n> 总共容量{round(userinfo.capacity / 1073741824, 2)} GB")
         else:
             self.push_msg("获取用户信息失败")
 
@@ -386,11 +386,15 @@ class TY(BaseFSTemplateForAccount):
 
     @property
     def captcha_target_img(self):
-        return os.path.join(self._abs_root_dir, f"{self._hash_value}_target.png")
+        return os.path.join(self.images_path, f"{self._hash_value}_target.png")
 
     @property
     def captcha_background_img(self):
-        return os.path.join(self._abs_root_dir, f"{self._hash_value}_background.png")
+        return os.path.join(self.images_path, f"{self._hash_value}_background.png")
+
+    @property
+    def images_path(self):
+        return os.path.join(self.load_storage.project_path, "images")
 
     def __handle_captcha_image(self, captcha_data: CaptchaData):
         """
