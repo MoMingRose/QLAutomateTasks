@@ -18,10 +18,10 @@ from common.storage.base import BaseFSStrategy
 
 class LocalFSStrategy(BaseFSStrategy):
     """本地文件储存策略"""
+    __cache = dict()
 
     def __init__(self):
-        self.__cache = dict()
-        self._hash_value = None
+        self._file_path = None
 
     def init_config(self, hash_value, task_name):
         """
@@ -32,12 +32,10 @@ class LocalFSStrategy(BaseFSStrategy):
         :param task_name:
         :return:
         """
-        self._hash_value = hash_value
         file_name = f"{hash_value}_{task_name}.json"
         root_dir_name = re.sub(r'[\\/:*?"<>|]', "_", task_name)
         root_dir_path = os.path.join(config.GlobalConfig.PROJECT_PATH, "files", root_dir_name)
-        if not os.path.exists(root_dir_path):
-            os.makedirs(root_dir_path)
+        os.makedirs(root_dir_path, exist_ok=True)
         self.file_path = os.path.join(root_dir_path, file_name)
 
     def load(self) -> dict:
@@ -50,22 +48,29 @@ class LocalFSStrategy(BaseFSStrategy):
                 else:
                     with open(self.file_path, "rb") as f:
                         ret_data = json.loads(self.decrypt(f.read()))
-            except:
-                pass
+            except FileNotFoundError:
+                pass  # 文件不存在，返回空字典
+            except json.JSONDecodeError:
+                pass  # JSON 解析错误，返回空字典
+            except Exception as e:
+                raise Exception(f"加载本地文件失败，文件路径：{self.file_path}, 错误信息：{e}")
         return ret_data
 
     def save(self, user_data: dict):
-        if not config.GlobalConfig.IS_ENCRYPT_SAVE:
-            with open(self.file_path, "w") as fp:
-                json.dump(user_data, fp)
-        else:
-            with open(self.file_path, "wb") as fp:
-                fp.writelines(self.encrypt(json.dumps(user_data)))
+        try:
+            if not config.GlobalConfig.IS_ENCRYPT_SAVE:
+                with open(self.file_path, "w") as fp:
+                    json.dump(user_data, fp)
+            else:
+                with open(self.file_path, "wb") as fp:
+                    fp.writelines(self.encrypt(json.dumps(user_data)))
+        except Exception as e:
+            raise Exception(f"保存本地文件失败，文件路径：{self.file_path}, 错误信息：{e}")
 
     @property
     def file_path(self):
-        return self.__cache.get("file_path")
+        return self._file_path
 
     @file_path.setter
     def file_path(self, value):
-        self.__cache["file_path"] = value
+        self._file_path = value
