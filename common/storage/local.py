@@ -28,11 +28,11 @@ class LocalFSStrategy(BaseFSStrategy):
         :param task_name:
         :return:
         """
-        file_name = f"{hash_value}_{task_name}.json"
+        self.filename = f"{hash_value}_{task_name}.json"
         root_dir_name = re.sub(r'[\\/:*?"<>|]', "_", task_name)
         root_dir_path = os.path.join(config.GlobalConfig.PROJECT_PATH, "files", root_dir_name)
         os.makedirs(root_dir_path, exist_ok=True)
-        self.file_path = os.path.join(root_dir_path, file_name)
+        self.file_path = os.path.join(root_dir_path, self.filename)
 
     def load(self) -> dict:
         ret_data = {}
