@@ -18,10 +18,6 @@ from common.storage.base import BaseFSStrategy
 
 class LocalFSStrategy(BaseFSStrategy):
     """本地文件储存策略"""
-    __cache = dict()
-
-    def __init__(self):
-        self._file_path = None
 
     def init_config(self, hash_value, task_name):
         """
@@ -66,11 +62,3 @@ class LocalFSStrategy(BaseFSStrategy):
                     fp.writelines(self.encrypt(json.dumps(user_data)))
         except Exception as e:
             raise Exception(f"保存本地文件失败，文件路径：{self.file_path}, 错误信息：{e}")
-
-    @property
-    def file_path(self):
-        return self._file_path
-
-    @file_path.setter
-    def file_path(self, value):
-        self._file_path = value

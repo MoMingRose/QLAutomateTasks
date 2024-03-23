@@ -506,12 +506,16 @@ class BaseFSTemplate(BaseQLTemplate, ABC):
         # 判断是否初始化
         if not is_init:
             self.load_storage.init_config(self._hash_value, self.task_name)
+
         # 开始从目标文件加载数据
         return self.load_storage.load()
 
     def storage_data(self):
         for strategy in self.save_storage.values():
-            strategy['storage'].save(self.user_data)
+            try:
+                strategy['storage'].save(self.user_data)
+            except Exception as e:
+                self.push_msg(f"数据存储失败! 信息如下：\n> 文件路径：{strategy['storage'].file_path}\n> 错误信息：{e}")
 
 
 class BaseFSTemplateForToken(BaseFSTemplate, ABC):

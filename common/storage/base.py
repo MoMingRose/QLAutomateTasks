@@ -6,7 +6,7 @@
 【功能描述】
 """
 import os
-from abc import ABC, abstractmethod
+from abc import abstractmethod, ABCMeta
 
 from Crypto.Cipher import AES
 from Crypto.Protocol.KDF import PBKDF2
@@ -19,8 +19,21 @@ except:
     import json
 
 
-class BaseFSStrategy(ABC):
+class SingletonMeta(ABCMeta):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super().__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
+class BaseFSStrategy(metaclass=SingletonMeta):
     """基本文件储存策略"""
+
+    def __init__(self, *args, **kwargs):
+        self._file_path = None
+        self._filename = None
 
     @abstractmethod
     def init_config(self, *args, **kwargs):
@@ -37,6 +50,22 @@ class BaseFSStrategy(ABC):
     @property
     def project_path(self):
         return config.GlobalConfig.PROJECT_PATH
+
+    @property
+    def file_path(self):
+        return self._file_path
+
+    @file_path.setter
+    def file_path(self, value):
+        self._file_path = value
+
+    @property
+    def filename(self):
+        return self._filename
+
+    @filename.setter
+    def filename(self, value):
+        self._filename = value
 
     @staticmethod
     def encrypt(content: str):
