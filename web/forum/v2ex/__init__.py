@@ -6,6 +6,7 @@
 【功能描述】
 """
 import re
+import time
 from typing import Tuple
 
 import config
@@ -40,7 +41,7 @@ class V2EX(BaseFSTemplateForCookie):
         url = f"https://www.v2ex.com/mission/daily/redeem?once={self.once}"
         res = self.session.get(url, timeout=5)
         html = res.text
-        self.new_current_balance = self.__fetch_balance(html)
+        self.new_current_balance = self.__fetch_balance_val(html)
         if "已成功领取" in html:
             return True
         return False
@@ -55,12 +56,12 @@ class V2EX(BaseFSTemplateForCookie):
             return True
 
         # 提取当前账户余额
-        self.current_balance = self.__fetch_balance(homepage)
+        self.current_balance = self.__fetch_balance_val(homepage)
 
         # 接下来就是在cookie没有过期的情况下，进行一些数据参数初始化
         # if "领取今日的登录奖励" not in homepage:
         #     self.is_enable_sign = False
-        daily_page = self.__request_daily()
+        daily_page = self.__request_daily_page()
         if "每日登录奖励已领取" in daily_page:
             self.is_sign = True
 
@@ -82,33 +83,65 @@ class V2EX(BaseFSTemplateForCookie):
         pass
 
     def last_task_run(self, *args, **kwargs):
-        if self.current_balance is not None and self.new_current_balance is not None:
-            self.push_msg(f"今日签到奖励：{int(self.new_current_balance) - int(self.current_balance)}铜币")
+        if self.new_current_balance is None:
+            html = self.__request_balance_page()
+            # 提取当前余额
+            self.current_balance = self.__fetch_balance_val(html)
+            self.push_msg(f"今日登录奖励：{self.__fetch_login_reward(html)}铜币")
+        else:
+            self.push_msg(f"今日登录奖励：{self.new_current_balance - self.current_balance}铜币")
             self.current_balance = self.new_current_balance
-        elif self.new_current_balance is None:
-            balance = self.__request_balance()
-            self.push_msg(f"今日签到奖励：{balance}铜币")
 
         self.push_msg(f"当前余额为: {self.current_balance}铜币")
 
     def __request_homepage(self):
-        url = "https://www.v2ex.com/"
-        res = self.session.get(url, timeout=5)
-        return res.text
+        return self.__request_page("https://www.v2ex.com/")
 
-    def __request_daily(self):
-        url = "https://www.v2ex.com/mission/daily"
-        res = self.session.get(url, timeout=5)
-        return res.text
+    def __request_daily_page(self):
+        return self.__request_page("https://www.v2ex.com/mission/daily")
 
-    def __request_balance(self):
-        url = "https://www.v2ex.com/balance"
-        html = self.session.get(url, timeout=5).text
-        self.current_balance = self.__fetch_balance(html)
-        if r := re.search(r"<span.*?奖励.*?(\d+).*?<", html, re.S):
-            return r.group(1)
+    def __request_balance_page(self):
+        return self.__request_page("https://www.v2ex.com/balance")
+
+    def __request_page(self, url):
+        return self.session.get(url, timeout=5).text
 
     @staticmethod
-    def __fetch_balance(html: str):
-        if r := re.search(r"<a.*?balance_area.*?>(\d+).*?<", html, re.S):
-            return r.group(1)
+    def __fetch_login_reward(html: str):
+        # 获取当前时间，时间格式为 年-月-日
+        now = time.strftime("%Y-%m-%d", time.localtime())
+        # 提取所有的登录奖励和时间
+        all_rewards = re.findall(r"(\d{4}-\d{2}-\d{2}).*?(?:奖励|资本).*?<strong>(\d+\.\d+)</strong>", html, re.S)
+        # 计算今日登录奖励并返回
+        return sum(float(reward) for date, reward in all_rewards if date == now)
+
+    @staticmethod
+    def __fetch_balance_val(html: str):
+        # 编译正则表达式模式
+        balance_pattern = re.compile(r"<a.*?balance_area.*?>(.*?)</a>", re.S)
+        coin_pattern = re.compile(r"\d+")
+
+        gold_coin = silver_coin = bronze_coin = 0
+
+        # 搜索余额区域
+        if match := balance_pattern.search(html):
+            balance_area = match.group(1)
+
+            # 删除所有图片标签
+            all_coin_text = re.sub(r"<img.*?>", "", balance_area)
+
+            # 查找所有硬币类型及其数量
+            all_coin_list = coin_pattern.findall(all_coin_text)
+            num_coins = len(all_coin_list)
+
+            # 根据硬币数量赋值金、银、铜硬币数量
+            if num_coins == 3:
+                gold_coin, silver_coin, bronze_coin = map(int, all_coin_list)
+            elif num_coins == 2:
+                silver_coin, bronze_coin = map(int, all_coin_list)
+            elif num_coins == 1:
+                bronze_coin = int(all_coin_list[0])
+
+        # 计算总余额
+        total_balance = gold_coin * 10000 + silver_coin * 100 + bronze_coin
+        return total_balance
