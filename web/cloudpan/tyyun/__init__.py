@@ -15,7 +15,7 @@ from typing import Tuple
 import requests
 import ujson
 
-import config
+import task_config
 from common.base import BaseFSTemplateForAccount
 from common.base_config import BaseTaskConfig
 from utils.crypt_utils import rsa_encrypt, aes_encrypt, aes_decrypt
@@ -25,7 +25,7 @@ from web.cloudpan.tyyun.scheme import *
 
 
 class TY(BaseFSTemplateForAccount):
-    TY_DEFAULT_USER_CONFIG = config.DefaultTaskConfig.TYYPConfig
+    TY_DEFAULT_USER_CONFIG = task_config.TYYPConfig
     TAG = TY_DEFAULT_USER_CONFIG.task_name
 
     def __init__(self, taskConfig: BaseTaskConfig = TY_DEFAULT_USER_CONFIG):

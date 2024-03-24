@@ -21,15 +21,15 @@ if __name__ == '__main__':
         load_dotenv()
     except:
         pass
-    from config import GlobalConfig
+    from global_config import *
     from software import *
     from web import *
 
     tasks = WEB_TASKS + SOFTWARE_TASKS
 
     for task in tasks:
-        if GlobalConfig.IS_DEBUG_TASKS:
-            if task.TAG not in GlobalConfig.DEBUG_TASKS_LIST:
+        if IS_DEBUG_TASKS:
+            if task.TAG not in DEBUG_TASKS_LIST:
                 continue
         global_run(task, task.TAG)
 

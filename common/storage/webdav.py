@@ -7,7 +7,7 @@
 """
 from webdav4.fsspec import WebdavFileSystem
 
-import config
+import global_config
 from common.storage.base import BaseFSStrategy
 
 try:
@@ -48,7 +48,7 @@ class WebdavFSStrategy(BaseFSStrategy):
 
     def load(self) -> any:
         try:
-            if config.GlobalConfig.IS_ENCRYPT_SAVE:
+            if global_config.IS_ENCRYPT_SAVE:
                 # 如果是加密存储，则进行解密读取
                 return json.loads(self.decrypt(self.fs.read_bytes(self.file_path)))
             else:
@@ -68,7 +68,7 @@ class WebdavFSStrategy(BaseFSStrategy):
             content = json.dumps(content)
         try:
             # 判断是否需要加密存储
-            if config.GlobalConfig.IS_ENCRYPT_SAVE:
+            if global_config.IS_ENCRYPT_SAVE:
                 # 加密储存
                 with self.fs.open(self.file_path, 'wb') as f:
                     f.writelines(self.encrypt(content))

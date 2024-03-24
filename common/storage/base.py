@@ -11,7 +11,7 @@ from abc import abstractmethod, ABCMeta
 from Crypto.Cipher import AES
 from Crypto.Protocol.KDF import PBKDF2
 
-import config
+import global_config
 
 try:
     import ujson as json
@@ -49,7 +49,7 @@ class BaseFSStrategy(metaclass=SingletonMeta):
 
     @property
     def project_path(self):
-        return config.GlobalConfig.PROJECT_PATH
+        return global_config.PROJECT_PATH
 
     @property
     def file_path(self):
@@ -71,7 +71,7 @@ class BaseFSStrategy(metaclass=SingletonMeta):
     def encrypt(content: str):
         salt = os.urandom(16)
         yield salt
-        key = PBKDF2(config.GlobalConfig.AES_KEY, salt, 32)
+        key = PBKDF2(global_config.AES_KEY, salt, 32)
         iv = os.urandom(16)
         yield iv
         cipher = AES.new(key, AES.MODE_CFB, iv)
@@ -82,7 +82,7 @@ class BaseFSStrategy(metaclass=SingletonMeta):
         salt = content[:16]
         iv = content[16:32]
         ciphertext = content[32:]
-        key = PBKDF2(config.GlobalConfig.AES_KEY, salt, 32)
+        key = PBKDF2(global_config.AES_KEY, salt, 32)
         cipher = AES.new(key, AES.MODE_CFB, iv)
         try:
             return cipher.decrypt(ciphertext).decode('utf-8')

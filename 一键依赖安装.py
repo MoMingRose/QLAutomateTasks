@@ -5,12 +5,12 @@
 【创建时间】2024-02-27
 【功能描述】
 """
-import config
+from global_config import DEPENDENCY_TABLE
 from utils.project_utils import check_and_install_dependencies
 
 if __name__ == '__main__':
     # 如果需要添加新的对照表可以在这里添加
-    config.GlobalConfig.DEPENDENCY_TABLE.update({
+    DEPENDENCY_TABLE.update({
 
     })
 

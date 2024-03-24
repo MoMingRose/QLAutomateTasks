@@ -7,13 +7,13 @@
 """
 from typing import Tuple
 
-import config
+import task_config
 from common.base import BaseFSTemplateForToken
 from common.base_config import BaseTaskConfig
 
 
 class AL(BaseFSTemplateForToken):
-    AL_DEFAULT_USER_CONFIG = config.DefaultTaskConfig.ALYPConfig
+    AL_DEFAULT_USER_CONFIG = task_config.ALYPConfig
     TAG = AL_DEFAULT_USER_CONFIG.task_name
 
     def __init__(self, taskConfig: BaseTaskConfig = AL_DEFAULT_USER_CONFIG):

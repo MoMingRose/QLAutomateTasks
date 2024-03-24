@@ -10,13 +10,13 @@ from typing import Tuple
 
 import requests
 
-import config
+import task_config
 from common.base import BaseFSTemplateForAccount
 from common.base_config import BaseTaskConfig
 
 
 class MT(BaseFSTemplateForAccount):
-    MT_DEFAULT_USER_CONFIG = config.DefaultTaskConfig.MTConfig
+    MT_DEFAULT_USER_CONFIG = task_config.MTConfig
     TAG = MT_DEFAULT_USER_CONFIG.task_name
 
     def __init__(self, taskConfig: BaseTaskConfig = MT_DEFAULT_USER_CONFIG):

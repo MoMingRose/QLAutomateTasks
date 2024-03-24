@@ -9,13 +9,13 @@ import re
 import time
 from typing import Tuple
 
-import config
+import task_config
 from common.base import BaseFSTemplateForCookie
 from common.base_config import BaseTaskConfig
 
 
 class V2EX(BaseFSTemplateForCookie):
-    DEFAULT_TASK_CONFIG = config.DefaultTaskConfig.V2EXConfig
+    DEFAULT_TASK_CONFIG = task_config.V2EXConfig
     TAG = DEFAULT_TASK_CONFIG.task_name
 
     def __init__(self, taskConfig: BaseTaskConfig = DEFAULT_TASK_CONFIG):

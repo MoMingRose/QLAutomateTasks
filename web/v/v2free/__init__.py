@@ -12,13 +12,13 @@ from typing import Tuple
 
 import requests
 
-import config
+import task_config
 from common.base import BaseFSTemplateForAccount
 from common.base_config import BaseTaskConfig
 
 
 class V2Free(BaseFSTemplateForAccount):
-    V2FREE_DEFAULT_USER_CONFIG = config.DefaultTaskConfig.V2FreeConfig
+    V2FREE_DEFAULT_USER_CONFIG = task_config.V2FreeConfig
     TAG = V2FREE_DEFAULT_USER_CONFIG.task_name
 
     def __init__(self, taskConfig: BaseTaskConfig = V2FREE_DEFAULT_USER_CONFIG):

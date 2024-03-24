@@ -8,13 +8,13 @@
 import re
 from typing import Tuple
 
-import config
+import task_config
 from common.base import BaseFSTemplateForAccount
 from common.base_config import BaseTaskConfig
 
 
 class XKProxy(BaseFSTemplateForAccount):
-    XKProxy_DEFAULT_TASK_CONFIG = config.DefaultTaskConfig.XKProxyConfig
+    XKProxy_DEFAULT_TASK_CONFIG = task_config.XKProxyConfig
     TAG = XKProxy_DEFAULT_TASK_CONFIG.task_name
 
     def __init__(self, taskConfig: BaseTaskConfig = XKProxy_DEFAULT_TASK_CONFIG):

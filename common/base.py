@@ -18,7 +18,7 @@ try:
 except:
     import json
 
-import config
+import global_config
 from common.base_config import BaseTaskConfig
 from utils import base_utils
 from utils.base_utils import fetch_account_list
@@ -77,8 +77,8 @@ class BaseTemplate(ABC):
             # 初始化用户账号配置数据
             self.user_data = self.load_config_data(username, password, *args, **kwargs)
             # 初始化推送用户名, 如果环境变量IS_SEND_REAL_NAME为True，则显示实际用户名，否则显示其他
-            self.print_username = f"【{username}】" if config.GlobalConfig.IS_PRINT_REAL_NAME else f"【账号{t}】"
-            self.push_username = f"【{username}】" if config.GlobalConfig.IS_SEND_REAL_NAME else f"【账号{t}】"
+            self.print_username = f"【{username}】" if global_config.IS_PRINT_REAL_NAME else f"【账号{t}】"
+            self.push_username = f"【{username}】" if global_config.IS_SEND_REAL_NAME else f"【账号{t}】"
             self.push_msg_list.append(f"{s}{self.push_username}{s}")
 
             # 初始化账号密码

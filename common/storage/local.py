@@ -12,7 +12,7 @@ try:
     import ujson as json
 except:
     import json
-import config
+import global_config
 from common.storage.base import BaseFSStrategy
 
 
@@ -30,7 +30,7 @@ class LocalFSStrategy(BaseFSStrategy):
         """
         self.filename = f"{hash_value}_{task_name}.json"
         root_dir_name = re.sub(r'[\\/:*?"<>|]', "_", task_name)
-        root_dir_path = os.path.join(config.GlobalConfig.PROJECT_PATH, "files", root_dir_name)
+        root_dir_path = os.path.join(global_config.PROJECT_PATH, "files", root_dir_name)
         os.makedirs(root_dir_path, exist_ok=True)
         self.file_path = os.path.join(root_dir_path, self.filename)
 
@@ -38,7 +38,7 @@ class LocalFSStrategy(BaseFSStrategy):
         ret_data = {}
         if os.path.exists(self.file_path):
             try:
-                if not config.GlobalConfig.IS_ENCRYPT_SAVE:
+                if not global_config.IS_ENCRYPT_SAVE:
                     with open(self.file_path, "r", encoding="utf-8") as f:
                         ret_data = json.load(f)
                 else:
@@ -54,7 +54,7 @@ class LocalFSStrategy(BaseFSStrategy):
 
     def save(self, user_data: dict):
         try:
-            if not config.GlobalConfig.IS_ENCRYPT_SAVE:
+            if not global_config.IS_ENCRYPT_SAVE:
                 with open(self.file_path, "w") as fp:
                     json.dump(user_data, fp)
             else:

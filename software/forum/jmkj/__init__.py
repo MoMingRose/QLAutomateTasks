@@ -8,13 +8,13 @@
 import threading
 from typing import Tuple
 
-import config
+import task_config
 from common.base import BaseFSTemplateForAccount
 from common.base_config import BaseTaskConfig
 
 
 class JMKJ(BaseFSTemplateForAccount):
-    JMKJ_DEFAULT_USER_CONFIG = config.DefaultTaskConfig.JMKJConfig
+    JMKJ_DEFAULT_USER_CONFIG = task_config.JMKJConfig
     TAG = JMKJ_DEFAULT_USER_CONFIG.task_name
 
     def __init__(self, taskConfig: BaseTaskConfig = JMKJ_DEFAULT_USER_CONFIG):

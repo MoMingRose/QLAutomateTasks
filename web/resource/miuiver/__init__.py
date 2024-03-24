@@ -8,13 +8,13 @@
 import re
 from typing import Tuple
 
-import config
+import task_config
 from common.base import BaseFSTemplateForAccount
 from common.base_config import BaseTaskConfig
 
 
 class MIUIVER(BaseFSTemplateForAccount):
-    DEFAULT_TASK_CONFIG = config.DefaultTaskConfig.MIUIVERConfig
+    DEFAULT_TASK_CONFIG = task_config.MIUIVERConfig
     TAG = DEFAULT_TASK_CONFIG.task_name
 
     def __init__(self, taskConfig: BaseTaskConfig = DEFAULT_TASK_CONFIG):

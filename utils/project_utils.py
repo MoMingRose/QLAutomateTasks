@@ -7,10 +7,10 @@
 """
 import subprocess
 
-import config
+import global_config
 
 
-def generate_requirements(dir: str = config.GlobalConfig.PROJECT_PATH) -> None:
+def generate_requirements(dir: str = global_config.PROJECT_PATH) -> None:
     """
     通过pipreqs库，生成依赖项列表
 
@@ -27,7 +27,7 @@ def generate_requirements(dir: str = config.GlobalConfig.PROJECT_PATH) -> None:
 
 
 def get_required_packages(
-        folder_path: str = config.GlobalConfig.PROJECT_PATH,
+        folder_path: str = global_config.PROJECT_PATH,
         file_name: str = "requirements.txt"
 ) -> list:
     """
@@ -41,12 +41,12 @@ def get_required_packages(
         for line in f:
             if install_name := line.strip().lower():
                 import_name = install_name.split("==")[0]
-                pack_list.append((install_name, config.GlobalConfig.DEPENDENCY_TABLE.get(import_name, import_name)))
+                pack_list.append((install_name, global_config.DEPENDENCY_TABLE.get(import_name, import_name)))
         return pack_list
 
 
 def check_and_install_dependencies(
-        folder_path: str = config.GlobalConfig.PROJECT_PATH,
+        folder_path: str = global_config.PROJECT_PATH,
         file_name: str = "requirements.txt"
 ):
     """

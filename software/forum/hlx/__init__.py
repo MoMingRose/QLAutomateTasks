@@ -8,14 +8,14 @@
 import time
 from typing import Tuple
 
-import config
+import task_config
 from common.base import BaseFSTemplateForAccount
 from common.base_config import BaseTaskConfig
 from utils import crypt_utils
 
 
 class HLX(BaseFSTemplateForAccount):
-    HLX_DEFAULT_USER_CONFIG = config.DefaultTaskConfig.HLXConfig
+    HLX_DEFAULT_USER_CONFIG = task_config.HLXConfig
     TAG = HLX_DEFAULT_USER_CONFIG.task_name
     STATIONARY_CODE = "fa1c28a5b62e79c3e63d9030b6142e4b"
     DEVICE_CODE = "[d]a87e1f0e-32d5-4331-bc12-4a41925f4eb5"
